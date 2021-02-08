@@ -1,6 +1,6 @@
 // set output to json file
 [out:json];
-// set search area to Portugal
+// set search area to any country you want
 ( area[int_name="Portugal"]; )->.searchArea;
 // perform union with parenthesis
 (
