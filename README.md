@@ -1,6 +1,6 @@
 # Interrail planer
 
-## The basic challenge
+## The basic challenge change
 We want to create an application where a user can easily plan his/her route for an interrail trip based on his preferences of selected cities in Portugal.
 The system should collect railway data from an API connected to OpenStreetMap and calculate the optimal route between the chosen multiple cities. Then this should be visualised for the user on a map.
 
