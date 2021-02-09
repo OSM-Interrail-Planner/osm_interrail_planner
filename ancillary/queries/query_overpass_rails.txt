@@ -1,0 +1,14 @@
+// set output to json file
+[out:json];
+// set search area to Portugal
+( area[int_name="Portugal"]; )->.searchArea;
+// perform union with parenthesis
+(
+  // AND statement by [key1=value1](and)[key2=value2]
+  way["railway"="narrow_gauge"]["disused:railway"!="rail"]["service"!~"."]
+["usage"!="military"]["usage"!="industrial"]["usage"!="freight"]["usage"!="tourism"](area.searchArea);
+  way["railway"="rail"]["disused:railway"!="rail"]["service"!~"."]
+["usage"!="military"]["usage"!="industrial"]["usage"!="freight"]["usage"!="tourism"](area.searchArea);
+);
+(._;);
+out geom;
