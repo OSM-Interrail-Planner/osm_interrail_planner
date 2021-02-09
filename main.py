@@ -29,56 +29,14 @@ def extraction(config: dict) -> None:
 
     # Calling the queries in the get_data from API function
     e.info("EXTRACTION: DOWNLOADING RAILS DATA")
-
-    n = 0
-    while n < 10:
-
-        try:
-            rail_data = e.get_data(url, query_rail)
-            
-        except:
-            n += 1
-            print(f"download attempt: {n}")
-
-        else:
-            break
-
+    rail_data = e.get_data(url, query_rail)
 
     e.info("EXTRACTION: DOWNLOADING STATION DATA")
-
-    n = 0
-    while n < 10:
-
-        try:
-            station_data = e.get_data(url, query_station)
-        
-        except:
-            n += 1
-            print(f"download attempt: {n}")
-
-        else:
-            break
-
-    
+    station_data = e.get_data(url, query_station)
+   
     e.info("EXTRACTION: DOWNLOADING CITY DATA")
-
-    n = 0
-    while n < 10:
-        
-        try:
-            city_data = e.get_data(url, query_city)
-
-
-        except:
-            n += 1
-            print(f"download attempt: {n}")
-            
-        else:
-            break
+    city_data = e.get_data(url, query_city)
     
-
-    
-
     # Saving data with file names rail, station, city
     fname_rail = config["fname_rail"]
     fname_rail = f"{DOWNLOAD_DIR}/{fname_rail}"
