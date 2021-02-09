@@ -1,0 +1,11 @@
+// set output to json file
+[out:json];
+// set search area to Portugal
+( area[int_name="Portugal"]; )->.searchArea;
+// perform union with parenthesis
+(
+  // AND statement by [key1=value1](and)[key2=value2]
+  relation["boundary"="protected_area"]["leisure"="nature_reserve"](area.searchArea);
+);
+(._;);
+out geom;
