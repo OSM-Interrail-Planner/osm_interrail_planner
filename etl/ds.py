@@ -15,10 +15,18 @@ def get_data(overpass_url: str, query: str):
     Returns: 
         A response data object in json format containing OSM data
     """
-    response = requests.get(overpass_url, params={'data': query})
-
-    return response.json()
-
+    # Perform a maximum of ten trials to download the data
+    download_attempt = 0
+    while download_attempt < 5:
+        try: 
+            response = requests.get(overpass_url, params={'data': query})
+            data = response.json()
+        except:
+                download_attempt += 1
+                e.info(f"EXTRACTION: DOWNLOAD ATTEMPT: {download_attempt}")
+        else:
+            break
+    return data
 
 
 def save_as_json_geojson(overpass_json, filename):
