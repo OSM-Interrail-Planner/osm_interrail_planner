@@ -11,6 +11,15 @@ TABLE_CITY = "cities"
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 
+# Create the filenames for folder data/original
+fname_rail_original = e.create_fname(TABLE_RAIL, DOWNLOAD_DIR)
+fname_station_original = e.create_fname(TABLE_STAT, DOWNLOAD_DIR)
+fname_city_original = e.create_fname(TABLE_CITY, DOWNLOAD_DIR)
+
+# Create the filenames for folder data/processed
+fname_rail_processed= e.create_fname(TABLE_RAIL, PROCESSED_DIR)
+fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
+fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
 def extraction(config: dict) -> None:
@@ -38,22 +47,17 @@ def extraction(config: dict) -> None:
     city_data = e.get_data(url, query_city)
     
     # Saving data with file names rail, station, city
-    fname_rail = config["fname_rail"]
-    fname_rail = f"{DOWNLOAD_DIR}/{fname_rail}"
     e.info("EXTRACTION: SAVING RAIL DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(rail_data, fname_rail)
+    e.save_as_json_geojson(rail_data, fname_rail_original) 
 
-    fname_station = config["fname_station"]
-    fname_station = f"{DOWNLOAD_DIR}/{fname_station}"
     e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(station_data, fname_station)
+    e.save_as_json_geojson(station_data, fname_station_original)
 
-    fname_city = config["fname_city"]
-    fname_city = f"{DOWNLOAD_DIR}/{fname_city}"
     e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(city_data, fname_city)
+    e.save_as_json_geojson(city_data, fname_city_original)
     
     e.info("EXTRACTION: COMPLETED")
+
 
 def transformation(config: dict) -> None:
     """Runs transformation
@@ -62,10 +66,16 @@ def transformation(config: dict) -> None:
         config (dict): [description]
     """
     e.info("TRANSFORMATION: START TRANSFORMATION")
+        
+    # Reading the .json files for rail, stations, city from the folder data(original)
     e.info("TRANSFORMATION: READING DATA")
-    fname = config["fname"]
-    df = e.read_csv(f"{DOWNLOAD_DIR}/{fname}")
+    rail_json = e.open_json(fname_rail_original)
+    station_json = e.open_json(fname_station_original)
+    city_json = e.open_json(fname_city_original)
     e.info("TRANSFORMATION: DATA READING COMPLETED")
+
+    #TODO STOPPED HERE TUESDAY 5:06 PM
+
     e.info("TRANSFORMATION: DATA SUBSETTING")
     cols = config["columns"]
 
@@ -74,7 +84,7 @@ def transformation(config: dict) -> None:
     # What should we do in that case?
     start_date = config["period"]["start_date"]
     end_date = config["period"]["end_date"]
-    df = df.loc[(start_date <= df["pickup_datetime"]) & (df["dropoff_datetime"] <= end_date)]
+    #df = df.loc[(start_date <= df["pickup_datetime"]) & (df["dropoff_datetime"] <= end_date)]
 
     # This is a simple transformation, but simple transformations
     # can be quite tricky. Consider what happens if there is
@@ -83,7 +93,7 @@ def transformation(config: dict) -> None:
     df = df[cols]
     e.info("TRANSFORMATION: SUBSETTING DONE")
     e.info("TRANSFORMATION: SAVING TRANSFORMED DATA")
-    e.write_csv(df, fname=f"{PROCESSED_DIR}/{fname}", sep=",")
+    
     e.info("TRANSFORMATION: SAVED")
     e.info("TRANSFORMATION: COMPLETED")
 
@@ -99,10 +109,10 @@ def load(config: dict, chunksize: int=1000) -> None:
         fname = config["fname"]
         db = e.DBController(**config["database"])
         e.info("LOAD: READING DATA")
-        df = e.read_csv(f"{PROCESSED_DIR}/{fname}")
+        #df = e.read_csv(f"{PROCESSED_DIR}/{fname}")
         e.info("LOAD: DATA READ")
         e.info("LOAD: INSERTING DATA INTO DATABASE")
-        db.insert_data(df, DB_SCHEMA, TABLE, chunksize=chunksize)
+        #db.insert_data(df, DB_SCHEMA, TABLE, chunksize=chunksize)
         e.info("LOAD: DONE")
     except Exception as err:
         e.die(f"LOAD: {err}")
@@ -140,7 +150,9 @@ def main(config_file: str) -> None:
     Args:
         config_file (str): configuration file
     """
+    # Read the config file
     config = e.read_config(config_file)
+
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
     extraction(config)

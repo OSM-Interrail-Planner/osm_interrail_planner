@@ -1,7 +1,6 @@
-from .logs import die
+from .logs import die, info
 import requests
 import json as js
-
 import osm2geojson as o2g
 import geojson as geojs
 import os
@@ -17,16 +16,31 @@ def get_data(overpass_url: str, query: str):
     """
     # Perform a maximum of ten trials to download the data
     download_attempt = 0
-    while download_attempt < 5:
+    while download_attempt < 10:
         try: 
             response = requests.get(overpass_url, params={'data': query})
             data = response.json()
         except:
                 download_attempt += 1
-                e.info(f"EXTRACTION: DOWNLOAD ATTEMPT: {download_attempt}")
+                info(f"EXTRACTION: DOWNLOAD ATTEMPT: {download_attempt}")
         else:
             break
     return data
+
+
+def create_fname(fname: str, directory: str):
+    """
+    This function creates filenames
+
+    Args:
+        fname (str): name of file
+        directory (str): The directory which will be set before the filename
+    
+    Return:
+        str: Complete filename with directory path
+    """
+    fname = f"{directory}/{fname}" #'data/original/rail'
+    return fname
 
 
 def save_as_json_geojson(overpass_json, filename):
