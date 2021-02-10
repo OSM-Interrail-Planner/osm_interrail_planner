@@ -185,6 +185,28 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
     return gdf
 
 
+def connect_stations(stations: gpd.gdf,groupby_var: str,rails: gpd.gdf) -> gpd.GeoDataFrame:
+    """
+    This function to conenct the stations points with the same name together in Linestring
+    
+    Args:
+        stations: Geo-DataFrame name(str) = The name of the Stations Geo-DataFrame
+        Groupby_var: str = The name of the station's name column inside the Stations Geo-DataFrame
+        rails: Geo-DataFrame name(str) = The name of the rails Geo-DataFrame
+    Returns:
+        Update the Geo-DataFrame of the rails with adding the Linstring created
+    """
+    new_stations = stations[[groupby_var,'geometry']].groupby('name').count()
+    new_stations.columns = ["count"]
+    new_stations = new_stations[new_stations["count"] > 1]
+    stations_list = list(new_stations.index)
+    for n in stations_list:
+        line_string = sg.LineString(list(stations[stations[groupby_var] == n]["geometry"]))
+        x = dict(name = f"{n}_change", geometry = line_string)
+        rails = rails.append(x, ignore_index=True)
+    return(rails)
+
+
 def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
     """
     This function saves a geopandas.Geodataframe as a shapefile
