@@ -9,7 +9,7 @@ fname_rail: rail
 fname_station: station
 fname_city: city
 columns_rail:
-  maxspeed: int
+  maxspeed: float
   name: str
 columns_station:
   name: str
@@ -17,4 +17,4 @@ columns_station:
 columns_city:
   name: str
   place: str
-  population: int
+  population: float

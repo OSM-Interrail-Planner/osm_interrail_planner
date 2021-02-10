@@ -57,9 +57,13 @@ def append_tags(element, new_element, desired_tags: list):
     for tag in desired_tags.keys():
         # condition: There must be a dictionary with tags AND the desired tag in it
         if ('tags' in element.keys()) and (tag in element['tags'].keys()): 
-            new_element[tag] = element['tags'][tag] #element['tags']['population'] = string 80000
+            value = element['tags'][tag] #element['tags']['population'] = string 80 000
+            if desired_tags[tag] == 'float':
+                new_element[tag] = value.replace(" ", "")
+            else:
+                new_element[tag] = value
         else:
-            new_element[tag] = None
+            pass
     return new_element
 
 
@@ -166,11 +170,16 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
         # append each single new element (dict) to the new list of new elements [dict1, dict2]
         new_data.append(new_element)
     
-        #transform it to a gpd geodataframe
-        gdf = gpd.GeoDataFrame(new_data, crs="EPSG:4326")
-        gdf.astype(desired_tags)  
+    #transform it to a gpd geodataframe
+    gdf = gpd.GeoDataFrame(new_data, crs="EPSG:4326")
         
-    return gdf 
+    new_dtype_dict = {}
+    for column in desired_tags.keys():
+        new_dtype_dict[column] = eval(desired_tags[column])
+        
+    gdf = gdf.astype(new_dtype_dict)  #gdf.astype('int')   #gdf.astype({'maxspeed': int, 'name': str})  
+    print(gdf.dtypes) 
+    return gdf
 
 
 def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
