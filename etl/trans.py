@@ -179,6 +179,8 @@ def connect_stations(stations: gpd.GeoDataFrame,groupby_var: str,rails: gpd.GeoD
     new_stations.columns = ["count"]
     new_stations = new_stations[new_stations["count"] > 1]
     stations_list = list(new_stations.index)
+    stations_list.remove("nan")
+
     for n in stations_list:
         line_string = sg.LineString(list(stations[stations[groupby_var] == n]["geometry"]))
         x = dict(name = f"{n}_change", geometry = line_string)
