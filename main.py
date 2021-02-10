@@ -155,8 +155,8 @@ def main(config_file: str) -> None:
 
     #Perform the transformation
     transformation(config)
-    msg = time_this_function(transformation, config=config)
-    e.info(msg)
+    #msg = time_this_function(transformation, config=config)
+    #e.info(msg)
     
 
     #load(config, chunksize=10000)

@@ -3,7 +3,6 @@ import requests
 import json as js
 import osm2geojson as o2g
 import geojson as geojs
-import os
 
 def get_data(overpass_url: str, query: str):
     """
@@ -60,4 +59,3 @@ def save_as_json_geojson(overpass_json, filename):
     overpass_geojson = o2g.json2geojson(overpass_json) ## convert to a geojson
     with open(f"{filename}.geojson",mode="w") as file2:
         geojs.dump(overpass_geojson,file2)
-    return None

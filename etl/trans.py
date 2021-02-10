@@ -2,7 +2,6 @@ import geojson
 import json
 import shapely.geometry as sg
 import geopandas as gpd
-import os
 
 # This will be our module for the transformation functions
 
@@ -93,7 +92,6 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
              last_element
              ]
     """
-
     new_data = []
     for element in overpass_json['elements']:
         # create a new element dictionary which stands for one element
@@ -161,6 +159,4 @@ def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
         geodf (gpd.GeoDataFrame): The geodata
         fname (str): directory path to store the data 
     """
-
     geodf.to_file(driver = 'ESRI Shapefile', filename= f"{fname}")
-    return
