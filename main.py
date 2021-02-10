@@ -67,35 +67,30 @@ def transformation(config: dict) -> None:
     """
     e.info("TRANSFORMATION: START TRANSFORMATION")
         
-    # Reading the .json files for rail, stations, city from the folder data(original)
+    # Reading the .json files for rail, stations, city from the folder data/original
     e.info("TRANSFORMATION: READING DATA")
     rail_json = e.open_json(fname_rail_original)
     station_json = e.open_json(fname_station_original)
     city_json = e.open_json(fname_city_original)
     e.info("TRANSFORMATION: DATA READING COMPLETED")
 
-    #TODO STOPPED HERE TUESDAY 5:06 PM
+    # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
+    e.info("TRANSFORMATION: DATA CONVERSION STARTED")
 
-    e.info("TRANSFORMATION: DATA SUBSETTING")
-    cols = config["columns"]
+    cols_rails = config["columns_rail"]
+    rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
+    e.save_as_shp(rail_gdf, fname_rail_processed)
+    # TODO: Add the change lines by function to the rail network
 
-    # Select only the rows in the analysis period
-    # What happens if there is no data in this period?
-    # What should we do in that case?
-    start_date = config["period"]["start_date"]
-    end_date = config["period"]["end_date"]
-    #df = df.loc[(start_date <= df["pickup_datetime"]) & (df["dropoff_datetime"] <= end_date)]
+    cols_station = config["columns_station"]
+    station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
+    e.save_as_shp(station_gdf, fname_station_processed)
 
-    # This is a simple transformation, but simple transformations
-    # can be quite tricky. Consider what happens if there is
-    # a column in cols not present in df?
-    # How can we save that?
-    df = df[cols]
-    e.info("TRANSFORMATION: SUBSETTING DONE")
-    e.info("TRANSFORMATION: SAVING TRANSFORMED DATA")
-    
-    e.info("TRANSFORMATION: SAVED")
-    e.info("TRANSFORMATION: COMPLETED")
+    cols_city = config["columns_city"]
+    city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
+    e.save_as_shp(city_gdf, fname_city_processed)
+
+    e.info("TRANSFORMATION: DATA CONVERSION COMPLETED")
 
 
 def load(config: dict, chunksize: int=1000) -> None:
@@ -153,13 +148,18 @@ def main(config_file: str) -> None:
     # Read the config file
     config = e.read_config(config_file)
 
+    # Perform the extraction
+    #extraction(config)
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
-    extraction(config)
-    #transformation(config)
+
+    #Perform the transformation
+    transformation(config)
+    msg = time_this_function(transformation, config=config)
+    e.info(msg)
+    
+
     #load(config, chunksize=10000)
-    #msg = time_this_function(transformation, config=config)
-    #e.info(msg)
     #msg = time_this_function(load, config=config, chunksize=1000)
     #e.info(msg)
 
