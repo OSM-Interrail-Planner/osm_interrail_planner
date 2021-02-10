@@ -57,7 +57,8 @@ def append_tags(element, new_element, desired_tags: list):
     for tag in desired_tags.keys():
         # condition: There must be a dictionary with tags AND the desired tag in it
         if ('tags' in element.keys()) and (tag in element['tags'].keys()): 
-            value = element['tags'][tag] #element['tags']['population'] = string 80 000
+            value = element['tags'][tag] # element['tags']['population'] = string 80 000
+            # if the tag/column is going to be converted to a float -> delete empty spaces of string
             if desired_tags[tag] == 'float':
                 new_element[tag] = value.replace(" ", "")
             else:
@@ -160,24 +161,26 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
                 geometry.append((lon, lat))
             new_geometry['coordinates'] = geometry
             
-        # shape the new_geometry {'type': 'Linestring OR Point', 'coordinates': [(lat, lon) OR, (lat, lon)]} 
+        # Shape the new_geometry {'type': 'Linestring OR Point', 'coordinates': [(lat, lon) OR, (lat, lon)]} 
         # and append it as under the tag 'geometry' in the new_element dictionary
         new_element['geometry'] = sg.shape(new_geometry)
 
-        # append atribute tags if available
+        # Append atribute tags if available
         append_tags(element, new_element, desired_tags)
 
-        # append each single new element (dict) to the new list of new elements [dict1, dict2]
+        # Append each single new element (dict) to the new list of new elements [dict1, dict2]
         new_data.append(new_element)
     
-    #transform it to a gpd geodataframe
+    # Transform it to a gpd geodataframe
     gdf = gpd.GeoDataFrame(new_data, crs="EPSG:4326")
-        
+
+    # Create a dictionary for converting the datatypes of the columns   
     new_dtype_dict = {}
     for column in desired_tags.keys():
         new_dtype_dict[column] = eval(desired_tags[column])
-        
-    gdf = gdf.astype(new_dtype_dict)  #gdf.astype('int')   #gdf.astype({'maxspeed': int, 'name': str})  
+
+    # Convert the datatypes of the columns    
+    gdf = gdf.astype(new_dtype_dict)
     print(gdf.dtypes) 
     return gdf
 
