@@ -9,12 +9,12 @@ fname_rail: rail
 fname_station: station
 fname_city: city
 columns_rail:
-- maxspeed
-- name
+  maxspeed: int
+  name: str
 columns_station:
-- name
-- network
+  name: str
+  network: str
 columns_city:
-- name
-- place
-- population
+  name: str
+  place: str
+  population: int
