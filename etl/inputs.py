@@ -25,4 +25,4 @@ def inputs_questions_city():
 Countries_list = inputs_questions_country()
 Cities_list = inputs_questions_city()
     
-print(Countries_list, Cities_list)
+print (Countries_list, Cities_list)
