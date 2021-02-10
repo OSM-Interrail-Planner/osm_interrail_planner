@@ -149,7 +149,7 @@ def main(config_file: str) -> None:
     config = e.read_config(config_file)
 
     # Perform the extraction
-    #extraction(config)
+    extraction(config)
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
 
