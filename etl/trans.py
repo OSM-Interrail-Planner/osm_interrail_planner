@@ -3,7 +3,6 @@ import json
 import shapely.geometry as sg
 import geopandas as gpd
 
-# This will be our module for the transformation functions
 
 def open_json(filename):
     """
@@ -17,6 +16,26 @@ def open_json(filename):
         data = json.load(file1)
     return data
 
+
+def check_datatype(osm_tag: str): 
+    """This function takes the osm tag and checks its data type and converts it
+
+    Args:
+        osm_tag (str): original tag from osm in default string
+
+    Returns:
+        [int|float|str]: Returns the tag in converted datatype
+    """
+    try:
+        number = float(osm_tag)
+    except:
+        return osm_tag
+    else:
+        if (number % 1) > 0:
+            return number
+        else:
+            return int(number)
+        
 
 # Besides the geometry columns we want to extract attributes of the OSM tags and store them in columns
 # Therefore this function creates dictionaries for each tag from the raw OSM JSON and is afterwards 
@@ -35,12 +54,16 @@ def append_tags(element, new_element, desired_tags: list):
         new_element: dictionary with new tags
     """
     # Make a for loop for every tag in the list desired tags
-    for tag in desired_tags:
+    for tag in desired_tags.keys():
         # condition: There must be a dictionary with tags AND the desired tag in it
         if ('tags' in element.keys()) and (tag in element['tags'].keys()): 
-            new_element[tag] = element['tags'][tag]
+            value = element['tags'][tag] #element['tags']['population'] = string 80 000
+            if desired_tags[tag] == 'float':
+                new_element[tag] = value.replace(" ", "")
+            else:
+                new_element[tag] = value
         else:
-            new_element[tag] = None
+            pass
     return new_element
 
 
@@ -148,7 +171,15 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
         new_data.append(new_element)
     
     #transform it to a gpd geodataframe
-    return gpd.GeoDataFrame(new_data, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(new_data, crs="EPSG:4326")
+        
+    new_dtype_dict = {}
+    for column in desired_tags.keys():
+        new_dtype_dict[column] = eval(desired_tags[column])
+        
+    gdf = gdf.astype(new_dtype_dict)  #gdf.astype('int')   #gdf.astype({'maxspeed': int, 'name': str})  
+    print(gdf.dtypes) 
+    return gdf
 
 
 def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
