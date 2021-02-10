@@ -21,8 +21,3 @@ def inputs_questions_city():
         for n in range(Number_Of_Cities-1):
            Cities_list.append((input("What else ? ")))
     return(Cities_list)
-    
-Countries_list = inputs_questions_country()
-Cities_list = inputs_questions_city()
-    
-print (Countries_list, Cities_list)
