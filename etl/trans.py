@@ -15,26 +15,6 @@ def open_json(filename):
     with open(f"{filename}.json") as file1:
         data = json.load(file1)
     return data
-
-
-def check_datatype(osm_tag: str): 
-    """This function takes the osm tag and checks its data type and converts it
-
-    Args:
-        osm_tag (str): original tag from osm in default string
-
-    Returns:
-        [int|float|str]: Returns the tag in converted datatype
-    """
-    try:
-        number = float(osm_tag)
-    except:
-        return osm_tag
-    else:
-        if (number % 1) > 0:
-            return number
-        else:
-            return int(number)
         
 
 # Besides the geometry columns we want to extract attributes of the OSM tags and store them in columns
@@ -181,11 +161,10 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
 
     # Convert the datatypes of the columns    
     gdf = gdf.astype(new_dtype_dict)
-    print(gdf.dtypes) 
     return gdf
 
 
-def connect_stations(stations: gpd.gdf,groupby_var: str,rails: gpd.gdf) -> gpd.GeoDataFrame:
+def connect_stations(stations: gpd.GeoDataFrame,groupby_var: str,rails: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     This function to conenct the stations points with the same name together in Linestring
     

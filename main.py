@@ -77,14 +77,15 @@ def transformation(config: dict) -> None:
     # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
     e.info("TRANSFORMATION: DATA CONVERSION STARTED")
 
-    cols_rails = config["columns_rail"]
-    rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
-    e.save_as_shp(rail_gdf, fname_rail_processed)
-    # TODO: Add the change lines by function to the rail network
 
     cols_station = config["columns_station"]
     station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
     e.save_as_shp(station_gdf, fname_station_processed)
+
+    cols_rails = config["columns_rail"]
+    rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
+    rail_gdf = e.connect_stations(station_gdf, "name" ,rail_gdf)
+    e.save_as_shp(rail_gdf, fname_rail_processed)
 
     cols_city = config["columns_city"]
     city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
