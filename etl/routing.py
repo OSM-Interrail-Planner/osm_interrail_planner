@@ -3,13 +3,15 @@ import random
 import pprint as pp
 
 
-def create_distance_matrix(stations: list) -> dict:
+def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
     """This function creates a distance matrix including all possible distances between input station list.
     Distances are calculated as shortest path along a network
 
     Args:
         stations (list):The list of stations contains each station which should be included in the distance matrix
                         This is a list of strings.
+        mirror_matrix (bool): If True it takes distances which are already calculated for a pair of stations
+                        assumption: distance(1->2) = distance(2->1)
 
     Returns:
         dict: The dictionary contains two elements.
@@ -36,17 +38,22 @@ def create_distance_matrix(stations: list) -> dict:
             
             # If the destination is listed before the origin in the stations this distance has already been 
             # calculated. So it can be appended already by distance_matrix[index_destination][index_origin]
-            elif stations.index(st_destination) < stations.index(st_origin):
+            elif (stations.index(st_destination)) < stations.index(st_origin) and (mirror_matrix == True):
                 index_origin = stations.index(st_origin)
                 index_destination = stations.index(st_destination)
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
 
             # Only calculate the distance new if the destination station is listed 
             # after the origin station in the stations list
-            elif stations.index(st_destination) > stations.index(st_origin):
+            elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
                 #shortest_path = func_shortest_path(st_origin, st_destination)
                 #distance = shortest_path.length()
                 # FOR TESTING
+                distance = random.randint(0,1000)
+                list_dist_st_origin.append(distance)
+
+            # If mirror_matrix = False just calculate everything
+            else:
                 distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
@@ -61,6 +68,6 @@ def create_distance_matrix(stations: list) -> dict:
     return dict_distance_matrix
 
 
-dist_dict = create_distance_matrix(["a", "b", "c", "d", "e"])
+dist_dict = create_distance_matrix(["a", "b", "c", "d", "e"], mirror_matrix=True)
 pp.pprint(dist_dict)
 
