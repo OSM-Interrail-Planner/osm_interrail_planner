@@ -1,4 +1,5 @@
-# FOR TESTING
+# FOR TESTING we use random numbers so far
+#from module shortest_path import calculate_shortest_path
 import random
 import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
@@ -22,6 +23,11 @@ def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
                                        [d21, d22=0, d23, d24],
                                        [d31, d32, d33=0, d34],
                                        [d41, d42, d43, d44=0]]
+                3. "path_matrix" (containing LineString objects as paths): 
+                                      [[path11=0, path12, path13, path14],
+                                       [path21, path22=0, path23, path24],
+                                       [path31, path32, path33=0, path34],
+                                       [path41, path42, path43, path44=0]]
 
     """
     dict_distance_matrix = {}
@@ -29,87 +35,107 @@ def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
     dict_distance_matrix["num_vehicles"] = 1
     dict_distance_matrix['depot'] = 0
     distance_matrix = []
+    ## path_matrix = []
 
     # Loop over all stations as origins
     for st_origin in stations:
         list_dist_st_origin = []
+        ## list_path_st_origin = []
         # Loop over all stations as destinations
         for st_destination in stations:
 
-            # If station origin and station destination are the same insert distance = 0
+            # If station origin and station destination are the same insert distance = 0 or path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
-            
-            # If the destination is listed before the origin in the stations this distance has already been 
+                ## list_path_st_origin.append(None)
+
+            # If the destination is listed before the origin in the stations the path and distance has already been 
             # calculated. So it can be appended already by distance_matrix[index_destination][index_origin]
             elif (stations.index(st_destination)) < stations.index(st_origin) and (mirror_matrix == True):
                 index_origin = stations.index(st_origin)
                 index_destination = stations.index(st_destination)
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
+                ## list_path_st_origin.append(path_matrix[index_destination][index_origin])
 
-            # Only calculate the distance new if the destination station is listed 
+            # Only calculate the path and distance new if the destination station is listed 
             # after the origin station in the stations list
             elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
-                #shortest_path = func_shortest_path(st_origin, st_destination)
-                #distance = shortest_path.length()
+                ## shortest_path = calculate_shortest_path(st_origin, st_destination)
+                ## list_path_st_origin.append(distance)
+                ## distance = shortest_path.length()
                 # FOR TESTING
                 distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
             # If mirror_matrix = False just calculate everything
             else:
+                ## shortest_path = calculate_shortest_path(st_origin, st_destination)
+                ## list_path_st_origin.append(distance)
+                ## distance = shortest_path.length()
+                # FOR TESTING
                 distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
         # After all distances from the origin station have been calculated append it to the matrix
         distance_matrix.append(list_dist_st_origin)
-        # Reset the distance list to an empty list
+        ##path_matrix.append(list_path_st_origin)
+
+        # Reset the distance and list to an empty list
         list_dist_st_origin = []
+        ##list_path_st_origin = []
 
 
-    # After the matrix have been create insert it to the dictionary
+    # After the matrices have been created insert it to the dictionary
     dict_distance_matrix["distance_matrix"] = distance_matrix
+    ##dict_distance_matrix["path_matrix"] = path_matrix
+
     return dict_distance_matrix
 
 
-
-
-
-
 def print_solution(manager, routing, solution, dict_distance_matrix):
+    #TODO add informations to the DocString!
     """prints solution on console."""
     print('Objective: {} miles'.format(solution.ObjectiveValue()))
+    
+    # create the output with index names
     index = routing.Start(0)
-    plan_output = "Route from start station:\n"
-    route_distance = 0
+    plan_output = "Route from start station:\n" #starting string
+    route_distance = 0 #starting distance
     while not routing.IsEnd(index):
-        plan_output += f" {manager.IndexToNode(index)},"
-        previous_index = index
-        index = solution.Value(routing.NextVar(index))
-        route_distance += routing.GetArcCostForVehicle(previous_index, index, 0)
+        plan_output += f" {manager.IndexToNode(index)}," #add index to string output
+        previous_index = index 
+        index = solution.Value(routing.NextVar(index)) #define the following stop...
+        route_distance += routing.GetArcCostForVehicle(previous_index, index, 0) #...to get the distance between the stops
     plan_output += ' {}\n'.format(manager.IndexToNode(index))
 
-    the_route = []
-    for i in plan_output:
-        
+    # create a string output with city names
+    route_list = plan_output.replace("\n", "").replace(",", " ")
+    route_list = route_list.split(" ")
+    print(route_list)
+    route_cities = []
+    for i in route_list:
         try:
             i = int(i)
-            data1 = dict_distance_matrix['stations_index'][i]
-            the_route.append(data1)
+            city = dict_distance_matrix["stations_index"][i]
+            route_cities.append(city)
         except:
             pass
+    route_cities = "-> ".join(route_cities)
 
-
-    print("->".join(the_route))
+    # print the route with indices, cities and distances
+    print(route_cities)
     print(plan_output)
+
+    # WHAT HAPPENS HERE?
     plan_output += 'Route distance: {}miles\n'.format(route_distance)
 
 
-def main():
+def main(stations: list):
+    # TODO add informatino to docstring
     """Entry point of the program"""
     # Intitiate the data problem.
-    data = create_distance_matrix(['Lisbon', 'Porto', 'Coimbra', 'Faro', 'Beja', 'Lisbon1', 'Porto1', 'Coimbra1', 'Faro1', 'Beja1', 'Lisbon2', 'Porto2'], mirror_matrix=True)
-    pp.pprint(data)
+    data = create_distance_matrix(stations, mirror_matrix=True)
+    pp.pprint(data) # FOR TESTING
     
     # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
@@ -118,7 +144,7 @@ def main():
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
     
-    
+
     def distance_callback(from_index, to_index):
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
@@ -145,4 +171,4 @@ def main():
 
     
 
-main()
+main(['Lisbon', 'Evora', 'Beja', 'Faro', 'Aljezur', 'Porto', 'Centro', 'Cascais', 'Syver', 'Mo', 'Lenzi'])
