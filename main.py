@@ -22,6 +22,8 @@ fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
 fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
+
+
 def extraction(config: dict) -> None:
     """ Runs extraction
 
@@ -93,6 +95,15 @@ def transformation(config: dict) -> None:
 
     e.info("TRANSFORMATION: DATA CONVERSION COMPLETED")
 
+def routing(list_input_city):
+    gdf_input_stations = e.city_to_station(fname_city_processed, fname_station_processed, list_input_city)
+
+    dict_distance_matrix = e.create_distance_matrix(gdf_input_stations, mirror_matrix=True)
+    
+    e.tsp_calculation(dict_distance_matrix)
+
+
+
 
 def load(config: dict, chunksize: int=1000) -> None:
     """Runs load
@@ -148,6 +159,9 @@ def main(config_file: str) -> None:
     """
     # Read the config file
     config = e.read_config(config_file)
+    
+    country = e.inputs_country()
+    list_input_city = e.inputs_city()
 
     # Perform the extraction
     #extraction(config)
@@ -159,6 +173,7 @@ def main(config_file: str) -> None:
     #msg = time_this_function(transformation, config=config)
     #e.info(msg)
     
+    routing(list_input_city)
 
     #load(config, chunksize=10000)
     #msg = time_this_function(load, config=config, chunksize=1000)

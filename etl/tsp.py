@@ -4,9 +4,10 @@ import random
 import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
+import geopandas as gpd
 
 
-def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
+def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, mirror_matrix: bool) -> dict:
     """This function creates a distance matrix including all possible distances between input station list.
     Distances are calculated as shortest path along a network
 
@@ -30,6 +31,8 @@ def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
                                        [path41, path42, path43, path44=0]]
 
     """
+    stations = list(gdf_input_stations["name"])
+    print(stations)
     dict_distance_matrix = {}
     dict_distance_matrix["stations_index"] = stations
     dict_distance_matrix["num_vehicles"] = 1
@@ -92,7 +95,7 @@ def create_distance_matrix(stations: list, mirror_matrix: bool) -> dict:
     return dict_distance_matrix
 
 
-def print_solution(manager, routing, solution, dict_distance_matrix):
+def tsp_solution(manager, routing, solution, dict_distance_matrix):
     #TODO add informations to the DocString!
     """prints solution on console."""
     print('Objective: {} miles'.format(solution.ObjectiveValue()))
@@ -111,7 +114,6 @@ def print_solution(manager, routing, solution, dict_distance_matrix):
     # create a string output with city names
     route_list = plan_output.replace("\n", "").replace(",", " ")
     route_list = route_list.split(" ")
-    print(route_list)
     route_cities = []
     for i in route_list:
         try:
@@ -125,32 +127,30 @@ def print_solution(manager, routing, solution, dict_distance_matrix):
     # print the route with indices, cities and distances
     print(route_cities)
     print(plan_output)
+    return route_cities
+    return plan_output
 
     # WHAT HAPPENS HERE?
     plan_output += 'Route distance: {}miles\n'.format(route_distance)
 
 
-def main(stations: list):
+def tsp_calculation(dict_distance_matrix: dict):
     # TODO add informatino to docstring
-    """Entry point of the program"""
-    # Intitiate the data problem.
-    data = create_distance_matrix(stations, mirror_matrix=True)
-    pp.pprint(data) # FOR TESTING
-    
+  
     # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
-                                          data['num_vehicles'], data['depot'])
+    manager = pywrapcp.RoutingIndexManager(len(dict_distance_matrix['distance_matrix']), dict_distance_matrix['num_vehicles'], dict_distance_matrix['depot'])
     
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
     
 
     def distance_callback(from_index, to_index):
+         # TODO change comments
         """Returns the distance between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return data['distance_matrix'][from_node][to_node]
+        return dict_distance_matrix['distance_matrix'][from_node][to_node]
     
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
     
@@ -165,10 +165,7 @@ def main(stations: list):
     solution = routing.SolveWithParameters(search_parameters)
     
     # Print solution on console.
-    
     if solution: 
-        print_solution(manager, routing, solution, data)
+        tsp_solution(manager, routing, solution, dict_distance_matrix)
 
-    
 
-main(['Lisbon', 'Evora', 'Beja', 'Faro', 'Aljezur', 'Porto', 'Centro', 'Cascais', 'Syver', 'Mo', 'Lenzi'])

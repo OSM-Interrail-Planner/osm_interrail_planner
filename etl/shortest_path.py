@@ -41,6 +41,8 @@ def city_to_station(file_city, file_station, list_input_city):
 
         output_gdf = output_gdf.append(near_station)
 
+    print(output_gdf)
+
     return output_gdf
 
 #file_city = "data\processed\cities\cities.shp"
