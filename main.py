@@ -1,7 +1,9 @@
 import etl as e
+import routing as r
 import argparse
 import time
 import sys
+import geopandas as gpd
 
 
 DB_SCHEMA = "sa"
@@ -82,25 +84,44 @@ def transformation(config: dict) -> None:
 
     cols_station = config["columns_station"]
     station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
-    e.save_as_shp(station_gdf, fname_station_processed)
 
     cols_rails = config["columns_rail"]
     rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
-    rail_gdf = e.connect_stations(station_gdf, "name" ,rail_gdf)
-    e.save_as_shp(rail_gdf, fname_rail_processed)
 
     cols_city = config["columns_city"]
     city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
+
+    e.save_as_shp(station_gdf, fname_station_processed)
+    e.save_as_shp(rail_gdf, fname_rail_processed)
     e.save_as_shp(city_gdf, fname_city_processed)
 
     e.info("TRANSFORMATION: DATA CONVERSION COMPLETED")
 
 def routing(list_input_city):
-    gdf_input_stations = e.city_to_station(fname_city_processed, fname_station_processed, list_input_city)
 
-    dict_distance_matrix = e.create_distance_matrix(gdf_input_stations, mirror_matrix=True)
+    # First, open shapefiles as GeoDataFrames
+    city_gdf = gpd.read_file(fname_city_processed)
+    station_gdf = gpd.read_file(fname_station_processed)   
+    rail_gdf = gpd.read_file(fname_rail_processed)
+
+    e.info("ROUTING: STARTED")
+    #preprocessing to make a routable network out of the rails and stations gdfs
+    e.info("ROUTING: PREPROCESSING STARTED")
+    station_gdf, stations_to_split, rails_to_split = r.snap_stations_to_rails(station_gdf, rail_gdf)
+    rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
+    e.info("ROUTING: SEGMENTS")
+    rail_segments_gdf = r.gdf_to_segments(stations_to_split, rails_to_split)
+    e.info("ROUTING: PREPROCESSING COMPLETED")
+
+    # connecting the input city list to the nearest station
+    gdf_input_stations = r.city_to_station(city_gdf, station_gdf, list_input_city)
+
+    e.info("ROUTING: SOLVING TSP STARTED")
+    #solving the travelling sales man problem ("TSP")
+    dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, mirror_matrix=True)
     
-    e.tsp_calculation(dict_distance_matrix)
+    r.tsp_calculation(dict_distance_matrix)
+    e.info("ROUTING: SOLVING TSP COMPLETED")
 
 
 

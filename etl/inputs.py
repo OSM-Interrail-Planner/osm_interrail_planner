@@ -1,8 +1,14 @@
 def inputs_country():
-    Number_Of_Countries = int(input("How many countries do you want to visit? "))
+    while True:
+        try:
+            Number_Of_Countries = int(input("How many countries do you want to visit? "))
+            break
+        except ValueError:
+            print("Oops!  That was no valid number.  Try again...")
+                                  
     Countries_list = []
     while Number_Of_Countries < 1:
-        Number_Of_Countries = int(input("Please enter a valid number \n How many countries do you want to visit? "))
+        Number_Of_Countries = int(input("Oops!  That was no valid number.  Try again..."))
     if Number_Of_Countries == 1:
         Countries_list.append((input("Which country ? ")))
     else:
@@ -12,7 +18,13 @@ def inputs_country():
     return(Countries_list)
 
 def inputs_city():
-    Number_Of_Cities = int(input("How many cities do you want to visit? "))
+    while True:
+        try:
+            Number_Of_Cities = int(input("How many cities do you want to visit? "))
+            break
+        except ValueError:
+            print("Oops!  That was no valid number.  Try again...")
+            
     while Number_Of_Cities < 2:
         Number_Of_Cities = int(input("Please enter a valid number \n How many cities do you want to visit? "))
     else:

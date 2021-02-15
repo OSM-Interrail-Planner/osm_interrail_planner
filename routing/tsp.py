@@ -4,10 +4,44 @@ import random
 import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
+import shapely.geometry as sg
 import geopandas as gpd
+import networkx as nx
+import momepy
 
+def shortest_path(station_gdf : gpd.GeoDataFrame, start_station_name: str, end_station_name: str, rail_segments_gdf: gpd.GeoDataFrame):
+    """
+    calculate shortest path between two stations by station name
 
-def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, mirror_matrix: bool) -> dict:
+    Args:
+        station_gdf (GeoDataFrame): stations points GeoDataFrame
+        start_station_name (str): Then name of the start station
+        end_station_name (str): The name of the end station
+        rail_segments_gdf (GeoDataFrame): rails segments GeoDataFrame
+    """
+    #Select the stations raws
+    start_station = station_gdf[["name","geometry"]][station_gdf['name'] == start_station_name].head(1)
+    end_station = station_gdf[["name","geometry"]][station_gdf['name'] == end_station_name].head(1)
+    
+    #creat geodataframe from the stations selected
+    start_end_dataframe = start_station.append(end_station)
+    
+    #transefer it into grapgh
+    stations_nodes = momepy.gdf_to_nx(start_end_dataframe, approach='primal')
+    
+    #create network from the new geo_data_frame
+    rail_network = momepy.gdf_to_nx(rail_segments_gdf, approach='primal')
+    
+    #select start and end stations nodes
+    start_node = list(stations_nodes.nodes)[0]
+    end_node = list(stations_nodes.nodes)[1]
+
+    shortest_path = nx.shortest_path(rail_network, start_node, end_node, weight=None, method='dijkstra')
+    shortest_path_line_string = sg.LineString(list(shortest_path))
+    
+    return(shortest_path_line_string)
+
+def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_gdf, mirror_matrix: bool) -> dict:
     """This function creates a distance matrix including all possible distances between input station list.
     Distances are calculated as shortest path along a network
 
@@ -38,19 +72,19 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, mirror_matrix: 
     dict_distance_matrix["num_vehicles"] = 1
     dict_distance_matrix['depot'] = 0
     distance_matrix = []
-    ## path_matrix = []
+    path_matrix = []
 
     # Loop over all stations as origins
     for st_origin in stations:
         list_dist_st_origin = []
-        ## list_path_st_origin = []
+        list_path_st_origin = []
         # Loop over all stations as destinations
         for st_destination in stations:
 
             # If station origin and station destination are the same insert distance = 0 or path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
-                ## list_path_st_origin.append(None)
+                list_path_st_origin.append(None)
 
             # If the destination is listed before the origin in the stations the path and distance has already been 
             # calculated. So it can be appended already by distance_matrix[index_destination][index_origin]
@@ -58,39 +92,39 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, mirror_matrix: 
                 index_origin = stations.index(st_origin)
                 index_destination = stations.index(st_destination)
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
-                ## list_path_st_origin.append(path_matrix[index_destination][index_origin])
+                list_path_st_origin.append(path_matrix[index_destination][index_origin])
 
             # Only calculate the path and distance new if the destination station is listed 
             # after the origin station in the stations list
             elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
-                ## shortest_path = calculate_shortest_path(st_origin, st_destination)
-                ## list_path_st_origin.append(distance)
-                ## distance = shortest_path.length()
-                # FOR TESTING
-                distance = random.randint(0,1000)
+                shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
+                list_path_st_origin.append(shortest_path_result)
+                distance = shortest_path_result.length()
+                ## FOR TESTING
+                ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
             # If mirror_matrix = False just calculate everything
             else:
-                ## shortest_path = calculate_shortest_path(st_origin, st_destination)
-                ## list_path_st_origin.append(distance)
-                ## distance = shortest_path.length()
-                # FOR TESTING
-                distance = random.randint(0,1000)
+                shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
+                list_path_st_origin.append(shortest_path_result)
+                distance = shortest_path_result.length()
+                ## FOR TESTING
+                ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
         # After all distances from the origin station have been calculated append it to the matrix
         distance_matrix.append(list_dist_st_origin)
-        ##path_matrix.append(list_path_st_origin)
+        path_matrix.append(list_path_st_origin)
 
         # Reset the distance and list to an empty list
         list_dist_st_origin = []
-        ##list_path_st_origin = []
+        list_path_st_origin = []
 
 
     # After the matrices have been created insert it to the dictionary
     dict_distance_matrix["distance_matrix"] = distance_matrix
-    ##dict_distance_matrix["path_matrix"] = path_matrix
+    dict_distance_matrix["path_matrix"] = path_matrix
 
     return dict_distance_matrix
 
