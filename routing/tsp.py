@@ -1,5 +1,3 @@
-# FOR TESTING we use random numbers so far
-#from module shortest_path import calculate_shortest_path
 import random
 import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
@@ -28,10 +26,12 @@ def shortest_path(station_gdf : gpd.GeoDataFrame, start_station_name: str, end_s
     
     #transefer it into grapgh
     stations_nodes = momepy.gdf_to_nx(start_end_dataframe, approach='primal')
+    print("datatype stations", type(stations_nodes))
     
     #create network from the new geo_data_frame
     rail_network = momepy.gdf_to_nx(rail_segments_gdf, approach='primal')
-    
+    print("datatype rail_network", type(rail_network ))
+
     #select start and end stations nodes
     start_node = list(stations_nodes.nodes)[0]
     end_node = list(stations_nodes.nodes)[1]
@@ -100,7 +100,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
                 print(shortest_path_result)
-                distance = shortest_path_result.length()
+                distance = shortest_path_result.length
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
@@ -110,7 +110,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
                 print(shortest_path_result)
-                distance = shortest_path_result.length()
+                distance = shortest_path_result.length
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
