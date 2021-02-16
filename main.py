@@ -109,18 +109,18 @@ def routing(list_input_city):
     e.info("ROUTING: PREPROCESSING STARTED")
         # snap stations to rail
     e.info("ROUTING: SNAP_STATIONS_TO_RAIL")
-    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf)
+    #station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf)
             # connect station for changing in rail_gdf
     e.info("ROUTING: CONNECT STATIONS")
-    rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
+    #rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
         # split rails at nearest station
     e.info("ROUTING: SPLIT_TO_SEGMENTS")
-    rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
+    #rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
 
     e.info("ROUTING: PREPROCESSING COMPLETED")
 
-    station_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/snapped_station")
-    rail_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/split_rails")
+    #station_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/snapped_station")
+    #rail_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/split_rails")
 
     station_gdf = gpd.read_file("data/snapped_station")   
     # connecting the input city list to the nearest station

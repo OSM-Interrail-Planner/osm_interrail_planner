@@ -80,7 +80,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
         list_path_st_origin = []
         # Loop over all stations as destinations
         for st_destination in stations:
-
+            print(f"from {st_origin} to {st_destination}")
             # If station origin and station destination are the same insert distance = 0 or path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
@@ -99,6 +99,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
             elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
+                print(shortest_path_result)
                 distance = shortest_path_result.length()
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
@@ -108,6 +109,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
             else:
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
+                print(shortest_path_result)
                 distance = shortest_path_result.length()
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
