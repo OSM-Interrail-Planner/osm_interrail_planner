@@ -107,18 +107,28 @@ def routing(list_input_city):
     e.info("ROUTING: STARTED")
     #preprocessing to make a routable network out of the rails and stations gdfs
     e.info("ROUTING: PREPROCESSING STARTED")
-    station_gdf, stations_to_split, rails_to_split = r.snap_stations_to_rails(station_gdf, rail_gdf)
+        # snap stations to rail
+    e.info("ROUTING: SNAP_STATIONS_TO_RAIL")
+    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf)
+            # connect station for changing in rail_gdf
+    e.info("ROUTING: CONNECT STATIONS")
     rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
-    e.info("ROUTING: SEGMENTS")
-    rail_segments_gdf = r.gdf_to_segments(stations_to_split, rails_to_split)
+        # split rails at nearest station
+    e.info("ROUTING: SPLIT_TO_SEGMENTS")
+    rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
+
     e.info("ROUTING: PREPROCESSING COMPLETED")
 
+    station_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/snapped_station")
+    rail_gdf.to_file(driver = 'ESRI Shapefile', filename= "data/split_rails")
+
+    station_gdf = gpd.read_file("data/snapped_station")   
     # connecting the input city list to the nearest station
     gdf_input_stations = r.city_to_station(city_gdf, station_gdf, list_input_city)
 
     e.info("ROUTING: SOLVING TSP STARTED")
     #solving the travelling sales man problem ("TSP")
-    dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, mirror_matrix=True)
+    dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, rail_gdf, mirror_matrix=True)
     
     r.tsp_calculation(dict_distance_matrix)
     e.info("ROUTING: SOLVING TSP COMPLETED")
@@ -185,12 +195,12 @@ def main(config_file: str) -> None:
     list_input_city = e.inputs_city()
 
     # Perform the extraction
-    #extraction(config)
+    # extraction(config)
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
 
     #Perform the transformation
-    transformation(config)
+    # transformation(config)
     #msg = time_this_function(transformation, config=config)
     #e.info(msg)
     
