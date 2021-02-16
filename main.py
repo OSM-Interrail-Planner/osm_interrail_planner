@@ -24,8 +24,6 @@ fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
 fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
-
-
 def extraction(config: dict) -> None:
     """ Runs extraction
 
@@ -81,15 +79,17 @@ def transformation(config: dict) -> None:
     # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
     e.info("TRANSFORMATION: DATA CONVERSION STARTED")
 
-
     cols_station = config["columns_station"]
     station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
+    station_gdf = e.reproject(station_gdf, "EPSG:32629")
 
     cols_rails = config["columns_rail"]
     rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
+    rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
 
     cols_city = config["columns_city"]
     city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
+    city_gdf = e.reproject(city_gdf, "EPSG:32629")
 
     e.save_as_shp(station_gdf, fname_station_processed)
     e.save_as_shp(rail_gdf, fname_rail_processed)

@@ -164,6 +164,19 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
     return gdf
 
 
+def reproject(geodf: gpd.GeoDataFrame, epsg: str) -> gpd.GeoDataFrame:
+    """This function reprojects a GeoDataFrame to the given EPSG-Code
+
+    Args:
+        geodf (gpd.GeoDataFrame): Input GeoDataFrame
+        epsg (str): EPSG-Code in format: "EPSG:NUMBER"
+
+    Returns:
+        gpd.GeoDataFrame: Reprojected GeoDataFrame
+    """
+
+    return geodf.to_crs(epsg)
+
 def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
     """
     This function saves a geopandas.Geodataframe as a shapefile
