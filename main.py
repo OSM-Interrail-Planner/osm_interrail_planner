@@ -1,7 +1,10 @@
 import etl as e
+import routing as r
 import argparse
 import time
 import sys
+import geopandas as gpd
+import os
 
 
 DB_SCHEMA = "sa"
@@ -22,14 +25,16 @@ fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
 fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
-
-
 def extraction(config: dict) -> None:
     """ Runs extraction
 
         Args:
             config (str): configuration dictionary
     """
+    if os.path.exists(DOWNLOAD_DIR):
+        e.info("EXTRACTION HAS ALREADY BEEN DONE")
+        return None
+
     e.info("EXTRACTION: START DATA EXTRACTION")
     url = config["url"]
 
@@ -61,46 +66,73 @@ def extraction(config: dict) -> None:
     e.info("EXTRACTION: COMPLETED")
 
 
-def transformation(config: dict) -> None:
+def network_preprocessing(config: dict) -> None:
     """Runs transformation
 
     Args:
         config (dict): [description]
     """
-    e.info("TRANSFORMATION: START TRANSFORMATION")
+    if os.path.exists(PROCESSED_DIR):
+        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+        return None
+
+    e.info("PREPROCESSING: STARTED")
         
     # Reading the .json files for rail, stations, city from the folder data/original
-    e.info("TRANSFORMATION: READING DATA")
     rail_json = e.open_json(fname_rail_original)
     station_json = e.open_json(fname_station_original)
     city_json = e.open_json(fname_city_original)
-    e.info("TRANSFORMATION: DATA READING COMPLETED")
 
     # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
-    e.info("TRANSFORMATION: DATA CONVERSION STARTED")
-
+    e.info("PREPROCSSING: DATA CONVERSION STARTED")
 
     cols_station = config["columns_station"]
     station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
-    e.save_as_shp(station_gdf, fname_station_processed)
+    station_gdf = e.reproject(station_gdf, "EPSG:32629")
 
     cols_rails = config["columns_rail"]
     rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
-    rail_gdf = e.connect_stations(station_gdf, "name" ,rail_gdf)
-    e.save_as_shp(rail_gdf, fname_rail_processed)
+    rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
 
     cols_city = config["columns_city"]
     city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
+    city_gdf = e.reproject(city_gdf, "EPSG:32629")
+
+    # Preprocess data to make it routable
+    e.info("PREPROCSSING: PREPARE ROUTABLE NETWORK")
+        # snap stations to rail
+    e.info("PREPROCESSING: SNAP_STATIONS_TO_RAIL")
+    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf)
+        # connect station for changing in rail_gdf
+    e.info("PREPROCESSING: CONNECT STATIONS")
+    rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
+        # split rails at nearest station
+    e.info("PREPROCESSING: SPLIT_TO_SEGMENTS")
+    rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
+
+    # save as shapefiles
+    e.save_as_shp(station_gdf, fname_station_processed)
+    e.save_as_shp(rail_gdf, fname_rail_processed)
     e.save_as_shp(city_gdf, fname_city_processed)
 
-    e.info("TRANSFORMATION: DATA CONVERSION COMPLETED")
+    e.info("PREPROCESSING: COMPLETED")
 
 def routing(list_input_city):
-    gdf_input_stations = e.city_to_station(fname_city_processed, fname_station_processed, list_input_city)
 
-    dict_distance_matrix = e.create_distance_matrix(gdf_input_stations, mirror_matrix=True)
+    # First, open shapefiles as GeoDataFrames
+    city_gdf = gpd.read_file(fname_city_processed)
+    station_gdf = gpd.read_file(fname_station_processed)   
+    rail_gdf = gpd.read_file(fname_rail_processed)
+
+    # connecting the input city list to the nearest station
+    gdf_input_stations = r.city_to_station(city_gdf, station_gdf, list_input_city)
+
+    e.info("ROUTING: SOLVING TSP STARTED")
+    #solving the travelling sales man problem ("TSP")
+    dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, rail_gdf, mirror_matrix=True)
     
-    e.tsp_calculation(dict_distance_matrix)
+    r.tsp_calculation(dict_distance_matrix)
+    e.info("ROUTING: SOLVING TSP COMPLETED")
 
 
 
@@ -164,12 +196,12 @@ def main(config_file: str) -> None:
     list_input_city = e.inputs_city()
 
     # Perform the extraction
-    #extraction(config)
+    extraction(config)
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
 
     #Perform the transformation
-    transformation(config)
+    network_preprocessing(config)
     #msg = time_this_function(transformation, config=config)
     #e.info(msg)
     

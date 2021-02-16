@@ -164,29 +164,18 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
     return gdf
 
 
-def connect_stations(stations: gpd.GeoDataFrame,groupby_var: str,rails: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """
-    This function to conenct the stations points with the same name together in Linestring
-    
+def reproject(geodf: gpd.GeoDataFrame, epsg: str) -> gpd.GeoDataFrame:
+    """This function reprojects a GeoDataFrame to the given EPSG-Code
+
     Args:
-        stations: Geo-DataFrame name(str) = The name of the Stations Geo-DataFrame
-        Groupby_var: str = The name of the station's name column inside the Stations Geo-DataFrame
-        rails: Geo-DataFrame name(str) = The name of the rails Geo-DataFrame
+        geodf (gpd.GeoDataFrame): Input GeoDataFrame
+        epsg (str): EPSG-Code in format: "EPSG:NUMBER"
+
     Returns:
-        Update the Geo-DataFrame of the rails with adding the Linstring created
+        gpd.GeoDataFrame: Reprojected GeoDataFrame
     """
-    new_stations = stations[[groupby_var,'geometry']].groupby('name').count()
-    new_stations.columns = ["count"]
-    new_stations = new_stations[new_stations["count"] > 1]
-    stations_list = list(new_stations.index)
-    stations_list.remove("nan")
 
-    for n in stations_list:
-        line_string = sg.LineString(list(stations[stations[groupby_var] == n]["geometry"]))
-        x = dict(name = f"{n}_change", geometry = line_string)
-        rails = rails.append(x, ignore_index=True)
-    return(rails)
-
+    return geodf.to_crs(epsg)
 
 def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
     """
