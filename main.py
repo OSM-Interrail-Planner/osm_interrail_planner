@@ -102,7 +102,7 @@ def network_preprocessing(config: dict) -> None:
     e.info("PREPROCSSING: PREPARE ROUTABLE NETWORK")
         # snap stations to rail
     e.info("PREPROCESSING: SNAP_STATIONS_TO_RAIL")
-    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf)
+    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf, 50)
         # connect station for changing in rail_gdf
     e.info("PREPROCESSING: CONNECT STATIONS")
     rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
@@ -130,10 +130,13 @@ def routing(list_input_city):
     e.info("ROUTING: SOLVING TSP STARTED")
     #solving the travelling sales man problem ("TSP")
     dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, rail_gdf, mirror_matrix=True)
-    
-    r.tsp_calculation(dict_distance_matrix)
-    e.info("ROUTING: SOLVING TSP COMPLETED")
+    plan_output = r.tsp_calculation(dict_distance_matrix)
 
+    # create GeoDataFrame ot of the plan_output
+    best_route = r.merge_tsp_solution(dict_distance_matrix, plan_output, crs="EPSG:32629")
+    e.info("ROUTING: SOLVING TSP COMPLETED")
+    
+    e.save_as_shp(best_route, 'data/best_route')
 
 
 
