@@ -51,7 +51,7 @@ def update_output(option_slctd):
     print(f"option:{(option_slctd)}")
     print(type(option_slctd))
     
-    geo_df = gpd.read_file("zip://C:/Users/Laptop/temp/railways/railways/railways1.zip")
+    geo_df = gpd.read_file("      .zip") #INSERT PATH HERE!
     print(f"geo_df1: {geo_df}")
     geo_df = geo_df.copy()
 
@@ -98,3 +98,4 @@ def open_browser():
 if __name__ == '__dash__':
     Timer(1, open_browser).start();
     app.run_server(debug=True, port=8050)
+
