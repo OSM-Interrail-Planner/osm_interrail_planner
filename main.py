@@ -1,220 +1,111 @@
-import etl as e
-import routing as r
-import argparse
-import time
-import sys
+import pandas as pd
+import plotly.express as px  # (version 4.7.0)
+import plotly.graph_objects as go
+
+import dash  # (version 1.12.0) pip install dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+
+app = dash.Dash()
+
+
 import geopandas as gpd
-import os
+import shapely.geometry
+import numpy as np
+import webbrowser
+from threading import Timer
 
 
-DB_SCHEMA = "sa"
-TABLE_RAIL = "railways"
-TABLE_STAT = "stations"
-TABLE_CITY = "cities"
-DOWNLOAD_DIR = "data/original"
-PROCESSED_DIR = "data/processed"
-
-# Create the filenames for folder data/original
-fname_rail_original = e.create_fname(TABLE_RAIL, DOWNLOAD_DIR)
-fname_station_original = e.create_fname(TABLE_STAT, DOWNLOAD_DIR)
-fname_city_original = e.create_fname(TABLE_CITY, DOWNLOAD_DIR)
-
-# Create the filenames for folder data/processed
-fname_rail_processed= e.create_fname(TABLE_RAIL, PROCESSED_DIR)
-fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
-fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
-def extraction(config: dict) -> None:
-    """ Runs extraction
+geo_df = gpd.read_file("zip://C:/Users/Lorenz Beck/Documents/Git/rail_planer/data/best_route.zip") #INSERT PATH HERE!
 
-        Args:
-            config (str): configuration dictionary
-    """
-    if os.path.exists(DOWNLOAD_DIR):
-        e.info("EXTRACTION HAS ALREADY BEEN DONE")
-        return None
+options_list = []
+for i, row in geo_df.iterrows():
+    option_dict = {}
+    option_dict['label'] = f"{i+1}. {geo_df.iloc[i,0]} to {geo_df.iloc[i,1]}"
+    option_dict['value'] = geo_df.iloc[i,0]
+    options_list.append(option_dict)
 
-    e.info("EXTRACTION: START DATA EXTRACTION")
-    url = config["url"]
-
-    # Setting the queries for overpass API 
-    query_rail = e.query_rail("Portugal")
-    query_station = e.query_station("Portugal")
-    query_city = e.query_city("Portugal")
-
-    # Calling the queries in the get_data from API function
-    e.info("EXTRACTION: DOWNLOADING RAILS DATA")
-    rail_data = e.get_data(url, query_rail)
-
-    e.info("EXTRACTION: DOWNLOADING STATION DATA")
-    station_data = e.get_data(url, query_station)
-   
-    e.info("EXTRACTION: DOWNLOADING CITY DATA")
-    city_data = e.get_data(url, query_city)
+#start_city = f"1. {geo_df.iloc[0,0]} to {geo_df.iloc[1,0]}"
     
-    # Saving data with file names rail, station, city
-    e.info("EXTRACTION: SAVING RAIL DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(rail_data, fname_rail_original) 
+# ------------------------------------------------------------------------------
+# App layout
+app.layout = html.Div([
+    html.H1("Here is the route:", style={'text-align': 'center'}),
 
-    e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(station_data, fname_station_original)
+#dcc.RangeSlider(
+#    marks={i: 'Label {}'.format(i) for i in range(-5, 7)},
+#    min=1,
+#    max=6,
+#    value=[-3, 4]
+)#  
 
-    e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(city_data, fname_city_original)
+dcc.Dropdown(id="slct_year",
+        options=options_list,
+        multi=False,
+        value="Ortiga",
+        style={'width': "40%"}
+        ),
+
+
+    dcc.Graph(id='railway_map')
+])
+
+# App callback
+@app.callback(
+    Output(component_id='railway_map', component_property='figure'),
+    Input(component_id='slct_year', component_property='value')
+)
+def update_output(option_slctd):
+    print(f"option:{(option_slctd)}")
+    print(type(option_slctd))
     
-    e.info("EXTRACTION: COMPLETED")
+    geo_df = gpd.read_file("zip://C:/Users/Lorenz Beck/Documents/Git/rail_planer/data/best_route.zip") #INSERT PATH HERE!
+    print(f"geo_df1: {geo_df}")
+    geo_df = geo_df.copy()
+    geo_df_reproject = geo_df.to_crs("EPSG:4326")
+
+    geo_df_reproject = geo_df_reproject[geo_df_reproject["start_city"] == option_slctd]
+    print(f"geo_df2: {geo_df_reproject}")
+
+    lats = []
+    lons = []
+    names = []
+
+    for feature, name in zip(geo_df_reproject.geometry, geo_df_reproject.start_city):
+        if isinstance(feature, shapely.geometry.linestring.LineString):
+            linestrings = [feature]
+        elif isinstance(feature, shapely.geometry.multilinestring.MultiLineString):
+            linestrings = feature.geoms
+        else:
+            continue
+        for linestring in linestrings:
+            x, y = linestring.xy
+            lats = np.append(lats, y)
+            lons = np.append(lons, x)
+            names = np.append(names, [name]*len(y))
+            lats = np.append(lats, None)
+            lons = np.append(lons, None)
+            names = np.append(names, None)
+    print(f"before fig: {geo_df}")
+    #fig = px.line_geo(lat=lats, lon=lons, hover_name=names)
+    fig = px.line_mapbox(lat=lats, lon=lons, hover_name=names, mapbox_style="stamen-terrain", zoom=7, width=1300, height=800)
+    print(f"Fig: {fig}")
+
+    fig.update_geos(fitbounds="locations")
+
+    return fig
 
 
-def network_preprocessing(config: dict) -> None:
-    """Runs transformation
 
-    Args:
-        config (dict): [description]
-    """
-    if os.path.exists(PROCESSED_DIR):
-        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
-        return None
+# App launcher
+def open_browser():
+	webbrowser.open_new("http://localhost:{}".format(8050))
 
-    e.info("PREPROCESSING: STARTED")
-        
-    # Reading the .json files for rail, stations, city from the folder data/original
-    rail_json = e.open_json(fname_rail_original)
-    station_json = e.open_json(fname_station_original)
-    city_json = e.open_json(fname_city_original)
-
-    # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
-    e.info("PREPROCSSING: DATA CONVERSION STARTED")
-
-    cols_station = config["columns_station"]
-    station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
-    station_gdf = e.reproject(station_gdf, "EPSG:32629")
-
-    cols_rails = config["columns_rail"]
-    rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
-    rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
-
-    cols_city = config["columns_city"]
-    city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
-    city_gdf = e.reproject(city_gdf, "EPSG:32629")
-
-    # Preprocess data to make it routable
-    e.info("PREPROCSSING: PREPARE ROUTABLE NETWORK")
-        # snap stations to rail
-    e.info("PREPROCESSING: SNAP_STATIONS_TO_RAIL")
-    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf, 50)
-        # connect station for changing in rail_gdf
-    e.info("PREPROCESSING: CONNECT STATIONS")
-    rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
-        # split rails at nearest station
-    e.info("PREPROCESSING: SPLIT_TO_SEGMENTS")
-    rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
-
-    # save as shapefiles
-    e.save_as_shp(station_gdf, fname_station_processed)
-    e.save_as_shp(rail_gdf, fname_rail_processed)
-    e.save_as_shp(city_gdf, fname_city_processed)
-
-    e.info("PREPROCESSING: COMPLETED")
-
-def routing(list_input_city):
-
-    # First, open shapefiles as GeoDataFrames
-    city_gdf = gpd.read_file(fname_city_processed)
-    station_gdf = gpd.read_file(fname_station_processed)   
-    rail_gdf = gpd.read_file(fname_rail_processed)
-
-    # connecting the input city list to the nearest station
-    gdf_input_stations = r.city_to_station(city_gdf, station_gdf, list_input_city)
-
-    e.info("ROUTING: SOLVING TSP STARTED")
-    #solving the travelling sales man problem ("TSP")
-    dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, rail_gdf, mirror_matrix=True)
-    plan_output = r.tsp_calculation(dict_distance_matrix)
-
-    # create GeoDataFrame ot of the plan_output
-    best_route = r.merge_tsp_solution(dict_distance_matrix, plan_output, crs="EPSG:32629")
-    e.info("ROUTING: SOLVING TSP COMPLETED")
+if __name__ == '__main__':
+    print('web')
+    Timer(1, open_browser).start();
+    app.run_server(debug=True, port=8050)
     
-    e.save_as_shp(best_route, 'data/best_route')
-
-
-
-def load(config: dict, chunksize: int=1000) -> None:
-    """Runs load
-
-    Args:
-        config (dict): configuration dictionary
-        chunksize (int): the number of rows to be inserted at one time
-    """
-    try:
-        fname = config["fname"]
-        db = e.DBController(**config["database"])
-        e.info("LOAD: READING DATA")
-        #df = e.read_csv(f"{PROCESSED_DIR}/{fname}")
-        e.info("LOAD: DATA READ")
-        e.info("LOAD: INSERTING DATA INTO DATABASE")
-        #db.insert_data(df, DB_SCHEMA, TABLE, chunksize=chunksize)
-        e.info("LOAD: DONE")
-    except Exception as err:
-        e.die(f"LOAD: {err}")
-
-
-def parse_args() -> str:
-    """ Reads command line arguments
-
-        Returns:
-            the name of the configuration file
-    """
-    parser = argparse.ArgumentParser(description="GPS: ETL working example")
-    parser.add_argument("--config_file", required=True, help="The configuration file")
-    args = parser.parse_args()
-    return args.config_file
-
-def time_this_function(func, **kwargs) -> str:
-    """ Times function `func`
-
-        Args:
-            func (function): the function we want to time
-
-        Returns:
-            a string with the execution time
-    """
-    import time
-    t0 = time.time()
-    func(**kwargs)
-    t1 = time.time()
-    return f"'{func.__name__}' EXECUTED IN {t1-t0:.3f} SECONDS"
-
-def main(config_file: str) -> None:
-    """Main function for ETL
-
-    Args:
-        config_file (str): configuration file
-    """
-    # Read the config file
-    config = e.read_config(config_file)
-    
-    country = e.inputs_country()
-    list_input_city = e.inputs_city()
-
-    # Perform the extraction
-    extraction(config)
-    #msg = time_this_function(extraction, config=config)
-    #e.info(msg)
-
-    #Perform the transformation
-    network_preprocessing(config)
-    #msg = time_this_function(transformation, config=config)
-    #e.info(msg)
-    
-    routing(list_input_city)
-
-    #load(config, chunksize=10000)
-    #msg = time_this_function(load, config=config, chunksize=1000)
-    #e.info(msg)
-
-
-if __name__ == "__main__":
-    config_file = parse_args()
-    main(config_file)

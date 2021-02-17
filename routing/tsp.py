@@ -263,7 +263,7 @@ def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) ->
     plan_list.remove('')
 
     # Create empty Dictionary for GeoDataFrame
-    route_dict = {'start_city': [], 'end_city': [], 'geometry': [], 'distance': []}
+    route_dict = {'start_city': [], 'end_city': [], 'geometry': [], 'distance': [], 'order': []}
 
     for i in range(len(plan_list)-1):
         start_city_index = int(plan_list[i])
@@ -274,9 +274,10 @@ def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) ->
         route_dict['end_city'].append(dict_distance_matrix['stations_index'][end_city_index]) 
         route_dict['geometry'].append(route) 
         route_dict['distance'].append(distance) 
+        route_dict['order'].append(i+1)
     pp.pprint(route_dict)
 
-    route_df = pd.DataFrame (route_dict, columns = ['start_city','end_city', 'geometry', 'distance'])
+    route_df = pd.DataFrame (route_dict, columns = ['start_city','end_city', 'geometry', 'distance', 'order'])
     print(route_df)
     route_gdf = gpd.GeoDataFrame(route_df, crs=crs)
     print(route_gdf)
