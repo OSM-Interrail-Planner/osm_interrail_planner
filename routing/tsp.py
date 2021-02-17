@@ -3,9 +3,64 @@ import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import shapely.geometry as sg
+from shapely.geometry import Point, MultiPoint, MultiLineString
+from shapely.ops import nearest_points
 import geopandas as gpd
+import pandas as pd
 import networkx as nx
 import momepy
+
+
+def city_to_station(gdf_city, gdf_station, list_input_city):
+    """Relates the input citiy to the closest station and if no station name replace by the city name
+
+    Args:
+        gdf_city (gpd.GeoDataFrame)
+        gdf_station (gpd.GeoDataFrame)
+        list_input_city (gpd.GeoDataFrame): The input list of cities in correct order (first city is start and end point)
+    
+    Returns:
+        gpd.GeoDataFrame: For the stations which are visited in correct order
+    """
+    # create a pandas dataframe for the list input city
+    city_data = {'index':  list(range(len(list_input_city))),
+        'city': list_input_city
+        }
+    city_df = pd.DataFrame (city_data, columns = ['index','city'])
+
+    # Filtering the city GeoDataFrame(gdf_city) to match only the cities of interest (list_input_city).
+    new = gdf_city['name'].isin(list_input_city) # -> create a boolean
+    gdf_city = gdf_city[new]
+    
+    # calculate nearest_points() between each city in gdf_city and gdf_stations
+    multi_station = MultiPoint(gdf_station['geometry'])
+    output_gdf = gpd.GeoDataFrame()
+    for i, row in gdf_city.iterrows():
+        city_point = row['geometry']
+        city_name = row['name']
+
+        near_point = nearest_points(city_point, multi_station) # output = [city point, station point]
+        
+        near_station = gdf_station[gdf_station['geometry'] == near_point[1]]
+        near_station = gpd.GeoDataFrame(near_station)
+        near_station['city'] = ''
+        near_station['city'] = city_name
+
+        output_gdf = output_gdf.append(near_station)
+
+    # order the output dataframe to have the start city at the beginning
+    output_gdf = pd.merge(output_gdf, city_df, on=['city', 'city'])
+    output_gdf = output_gdf.set_index('index')
+    output_gdf = output_gdf.sort_index()
+
+    # write city name as station name when there is nan
+    for i, row in output_gdf.iterrows():
+        if row['name'] == 'nan':
+            output_gdf.iloc[i, 0] = row['city']
+
+    print(output_gdf)
+    return output_gdf
+
 
 def shortest_path(station_gdf : gpd.GeoDataFrame, start_station_name: str, end_station_name: str, rail_segments_gdf: gpd.GeoDataFrame):
     """
@@ -80,7 +135,6 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
         list_path_st_origin = []
         # Loop over all stations as destinations
         for st_destination in stations:
-            print(f"from {st_origin} to {st_destination}")
             # If station origin and station destination are the same insert distance = 0 or path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
@@ -99,8 +153,8 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
             elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
-                print(shortest_path_result)
-                distance = shortest_path_result.length
+                distance = shortest_path_result.length/1000
+                print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
@@ -109,8 +163,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
             else:
                 shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                 list_path_st_origin.append(shortest_path_result)
-                print(shortest_path_result)
-                distance = shortest_path_result.length
+                distance = shortest_path_result.length/1000
                 ## FOR TESTING
                 ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
@@ -128,6 +181,8 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
     dict_distance_matrix["distance_matrix"] = distance_matrix
     dict_distance_matrix["path_matrix"] = path_matrix
 
+    pp.pprint(dict_distance_matrix)
+
     return dict_distance_matrix
 
 
@@ -138,17 +193,17 @@ def tsp_solution(manager, routing, solution, dict_distance_matrix):
     
     # create the output with index names
     index = routing.Start(0)
-    plan_output = "Route from start station:\n" #starting string
+    plan_output = "" #starting string
     route_distance = 0 #starting distance
     while not routing.IsEnd(index):
-        plan_output += f" {manager.IndexToNode(index)}," #add index to string output
+        plan_output += f"{manager.IndexToNode(index)} " #add index to string output
         previous_index = index 
         index = solution.Value(routing.NextVar(index)) #define the following stop...
         route_distance += routing.GetArcCostForVehicle(previous_index, index, 0) #...to get the distance between the stops
-    plan_output += ' {}\n'.format(manager.IndexToNode(index))
+    plan_output += '{} '.format(manager.IndexToNode(index))
 
     # create a string output with city names
-    route_list = plan_output.replace("\n", "").replace(",", " ")
+    route_list = plan_output.replace(",", " ")
     route_list = route_list.split(" ")
     route_cities = []
     for i in route_list:
@@ -163,11 +218,7 @@ def tsp_solution(manager, routing, solution, dict_distance_matrix):
     # print the route with indices, cities and distances
     print(route_cities)
     print(plan_output)
-    return route_cities
     return plan_output
-
-    # WHAT HAPPENS HERE?
-    plan_output += 'Route distance: {}miles\n'.format(route_distance)
 
 
 def tsp_calculation(dict_distance_matrix: dict):
@@ -202,6 +253,32 @@ def tsp_calculation(dict_distance_matrix: dict):
     
     # Print solution on console.
     if solution: 
-        tsp_solution(manager, routing, solution, dict_distance_matrix)
+        plan_output = tsp_solution(manager, routing, solution, dict_distance_matrix)
+        return plan_output
 
 
+def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) -> gpd.GeoDataFrame:
+
+    plan_list = plan_output.split(' ')
+    plan_list.remove('')
+
+    # Create empty Dictionary for GeoDataFrame
+    route_dict = {'start_city': [], 'end_city': [], 'geometry': [], 'distance': []}
+
+    for i in range(len(plan_list)-1):
+        start_city_index = int(plan_list[i])
+        end_city_index = int(plan_list[i+1])
+        route = dict_distance_matrix['path_matrix'][start_city_index][end_city_index]
+        distance = dict_distance_matrix['distance_matrix'][start_city_index][end_city_index]
+        route_dict['start_city'].append(dict_distance_matrix['stations_index'][start_city_index]) 
+        route_dict['end_city'].append(dict_distance_matrix['stations_index'][end_city_index]) 
+        route_dict['geometry'].append(route) 
+        route_dict['distance'].append(distance) 
+    pp.pprint(route_dict)
+
+    route_df = pd.DataFrame (route_dict, columns = ['start_city','end_city', 'geometry', 'distance'])
+    print(route_df)
+    route_gdf = gpd.GeoDataFrame(route_df, crs=crs)
+    print(route_gdf)
+
+    return(route_gdf)
