@@ -105,7 +105,7 @@ def split_line_by_nearest_points(gdf_line: gpd.GeoDataFrame, gdf_points: gpd.Geo
     line = gdf_line.geometry.unary_union
     coords = gdf_points.geometry.unary_union
 
-    # snap and split coords on line
+    # split coords on line
     # returns GeometryCollection
     split_line = split(line, coords)
 

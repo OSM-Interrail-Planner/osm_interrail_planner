@@ -121,9 +121,20 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
 
     """
     stations = list(gdf_input_stations["name"])
+    cities = list(gdf_input_stations["city"])
     print(stations)
     dict_distance_matrix = {}
     dict_distance_matrix["stations_index"] = stations
+    
+    # create stop names Lisboa (Cais do Sodre)
+    stop = []
+    for i, row in gdf_input_stations.iterrows():
+        if row["name"] == row["city"]:
+            stop.append(row["city"])
+        else:
+            stop.append(f"{row['city']} ({row['name']})")
+
+    dict_distance_matrix["stop"] = stop 
     dict_distance_matrix["num_vehicles"] = 1
     dict_distance_matrix['depot'] = 0
     distance_matrix = []
@@ -209,7 +220,7 @@ def tsp_solution(manager, routing, solution, dict_distance_matrix):
     for i in route_list:
         try:
             i = int(i)
-            city = dict_distance_matrix["stations_index"][i]
+            city = dict_distance_matrix["stop"][i]
             route_cities.append(city)
         except:
             pass
@@ -270,8 +281,8 @@ def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) ->
         end_city_index = int(plan_list[i+1])
         route = dict_distance_matrix['path_matrix'][start_city_index][end_city_index]
         distance = dict_distance_matrix['distance_matrix'][start_city_index][end_city_index]
-        route_dict['start_city'].append(dict_distance_matrix['stations_index'][start_city_index]) 
-        route_dict['end_city'].append(dict_distance_matrix['stations_index'][end_city_index]) 
+        route_dict['start_city'].append(dict_distance_matrix['stop'][start_city_index]) 
+        route_dict['end_city'].append(dict_distance_matrix['stop'][end_city_index]) 
         route_dict['geometry'].append(route) 
         route_dict['distance'].append(distance) 
         route_dict['order'].append(i+1)
