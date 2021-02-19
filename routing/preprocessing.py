@@ -1,18 +1,18 @@
 import shapely.geometry as sg
 from shapely.ops import split
-from shapely.geometry import Point, MultiPoint, MultiLineString
+from shapely.geometry import Point, MultiPoint, LineString, MultiLineString
 import pprint as pp
 import geopandas as gpd
 import pandas as pd
 import numpy as np
 
 
-def snap_with_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int) -> gpd.GeoDataFrame:
+def snap_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int) -> gpd.GeoDataFrame:
     """This function snaps points to the closest point of a line based on spatial indexing
 
     Args:
-        point_gdf (gpd.GeoDataFrame)
-        line_gdf (gpd.GeoDataFrame)
+        point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
+        line_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with line geometry
         offset (int): Tolerance for point to be snipped to line in crs metrics
 
     Returns:
@@ -61,59 +61,102 @@ def snap_with_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFr
     return updated_points 
     
 
-def connect_stations(stations: gpd.GeoDataFrame,groupby_var: str,rails: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int, ) -> gpd.GeoDataFrame:
     """
-    This function to conenct the stations points with the same name together in Linestring
+    This function connents the stations points within the offset distance by a line and appends it to the line_gdf
     
     Args:
-        stations: Geo-DataFrame  = The Stations Geo-DataFrame
-        Groupby_var: str = The name of the station's name column inside the Stations Geo-DataFrame
-        rails: Geo-DataFrame = The rails Geo-DataFrame
+        point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
+        line_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with line geometry
+        offset (int): Tolerance for points to be connected by a line in crs metrics
+    
     Returns:
-        Update the Geo-DataFrame of the rails with adding the Linstring created
+        gpd.GeoDataFrame: Line GeoDataFrame with updated lines as connections between the points 
     """
-    new_stations = stations[[groupby_var,'geometry']].groupby('name').count()
-    new_stations.columns = ["count"]
-    new_stations = new_stations[new_stations["count"] > 1]
-    stations_list = list(new_stations.index)
-    stations_list.remove("nan")
+    
+    # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
+    station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
-    for n in stations_list:
-        line_string = sg.LineString(list(stations[stations[groupby_var] == n]["geometry"]))
-        x = dict(name = f"{n}_change", geometry = line_string)
-        rails = rails.append(x, ignore_index=True)
-    return(rails)
+    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    hits = station_bbox.apply(lambda row: list(point_gdf.sindex.intersection(row)), axis=1)
+
+    # Create a better datastructure to relate the points to their lines in tolerance distance
+    tmp = pd.DataFrame({
+        # index of points table
+        "pt_idx": np.repeat(hits.index, hits.apply(len)),    
+        # ordinal position of points - access via iloc later
+        "pt_i": np.concatenate(hits.values)
+    })
+
+    # Drop self intersections
+    tmp = tmp[tmp["pt_idx"] != tmp["pt_i"]]
+
+    # Join bakc to get the geometries
+    tmp = tmp.join(point_gdf.reset_index(drop=True), on="pt_i") # reset_index() to give us the ordinal position of each line
+    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") # join back to the original points to get their geometry and rename the point geometry as "point"
+    
+    # Create Linestrings connecting the stations
+    tmp["line"] = tmp.apply(lambda row: LineString([row["geometry"], row["point"]]), axis=1)
+    
+    # Manage columns to be appended to the rails.gdf
+    tmp = tmp.set_geometry('line')
+    tmp = tmp.reset_index()
+    tmp = tmp.drop(['index', 'pt_idx', 'pt_i', 'network', 'geometry', 'point'], axis=1)
+    tmp = tmp.rename_geometry('geometry')
+    tmp["name"] = ['change'] * tmp.shape[0]
+
+    line_gdf = line_gdf.append(tmp, ignore_index=True)
+    
+    return(line_gdf)
 
 
-def split_line_by_nearest_points(gdf_line: gpd.GeoDataFrame, gdf_points: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def split_line_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int) -> gpd.GeoDataFrame:
     """
-    Split the union of lines with the union of points resulting 
-    Parameters
-    ----------
-    gdf_line : geoDataFrame
-        geodataframe with multiple rows of connecting line segments
-    gdf_points : geoDataFrame
-        geodataframe with multiple rows of single points
-
-    Returns
-    -------
-    gdf_segments : geoDataFrame
-        geodataframe of segments
+    This function connents the stations points within the offset distance by a line and appends it to the line_gdf
+    
+    Args:
+        point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
+        line_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with line geometry
+        offset (int): Tolerance for points to work as split points for a line in crs metrics
+    
+    Returns:
+        gpd.GeoDataFrame: Line GeoDataFrame with updated lines split by the points 
     """
 
-    # union all geometries
-    line = gdf_line.geometry.unary_union
-    coords = gdf_points.geometry.unary_union
+    # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
+    station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
-    # split coords on line
-    # returns GeometryCollection
-    split_line = split(line, coords)
+    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    hits = station_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
 
-    # transform Geometry Collection to GeoDataFrame
-    segments = [feature for feature in split_line]
+    # Create a better datastructure to relate the points to their lines in tolerance distance
+    tmp = pd.DataFrame({
+        # index of points table
+        "pt_idx": np.repeat(hits.index, hits.apply(len)),    
+        # ordinal position of lines - access via iloc later
+        "line_i": np.concatenate(hits.values)
+    })
 
-    gdf_segments = gpd.GeoDataFrame(
-        list(range(len(segments))), geometry=segments, crs=gdf_points.crs)
-    gdf_segments.columns = ['index', 'geometry']
+    # Join bakc to get the geometries
+    tmp = tmp.join(line_gdf.reset_index(drop=True), on="line_i") # reset_index() to give us the ordinal position of each line
+    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") # join back to the original points to get their geometry and rename the point geometry as "point"
+    
+    # Split the lines by the already snapped stations
+    tmp["split_lines"] = tmp.apply(lambda row: split(row["geometry"], row["point"]), axis=1)
+    tmp["num_features"] = tmp.apply(lambda row: len(row["split_lines"]), axis=1)
+    tmp = tmp[tmp["num_features"]>1]
 
-    return gdf_segments
+    # Create new GeoDataFrame for split lines
+    split_lines_dic = {"name": [], "geometry": []}
+    for i, row in tmp.iterrows():
+        split_lines_dic["name"].append("split1")
+        split_lines_dic["name"].append("split2")
+        split_lines_dic["geometry"].append(row["split_lines"][0])
+        split_lines_dic["geometry"].append(row["split_lines"][1])
+    split_lines_df = pd.DataFrame (split_lines_dic, columns = ["name", "geometry"])
+    split_lines_gdf = gpd.GeoDataFrame(split_lines_df, crs=line_gdf.crs)
+
+    # Merge new split lines with original lines
+    line_gdf = line_gdf.append(split_lines_gdf, ignore_index=True)
+
+    return(line_gdf)

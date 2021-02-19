@@ -20,7 +20,7 @@ app = dash.Dash()
 def open_browser():
     webbrowser.open_new("http://localhost:{}".format(8050))
 
-geo_df = gpd.read_file("zip://C:/Users/Laptop/Documents/NOVA/6. GroupPS on Programming and Analysis/Group project/GITHUB_local/rail_planer/data/best_route.zip") #INSERT PATH HERE!
+geo_df = gpd.read_file("zip://C:/Users/Lorenz Beck/Documents/Git/rail_planer/data/best_route.zip") #INSERT PATH HERE!
 
 options_list = []
 for i, row in geo_df.iterrows():
@@ -65,7 +65,7 @@ def update_output(option_slctd):
     #print(f"option:{(option_slctd)}")
     #print(type(option_slctd))
     
-    geo_df = gpd.read_file("zip://C:/Users/Laptop/Documents/NOVA/6. GroupPS on Programming and Analysis/Group project/GITHUB_local/rail_planer/data/best_route.zip") #INSERT PATH HERE!
+    geo_df = gpd.read_file("zip://C:/Users/Lorenz Beck/Documents/Git/rail_planer/data/best_route.zip") #INSERT PATH HERE!
     #print(f"geo_df1: {geo_df}")
     geo_df = geo_df.copy()
     geo_df_reproject = geo_df.to_crs("EPSG:4326")

@@ -56,7 +56,7 @@ def city_to_station(gdf_city, gdf_station, list_input_city):
     # write city name as station name when there is nan
     for i, row in output_gdf.iterrows():
         if row['name'] == 'nan':
-            output_gdf.iloc[i, 0] = row['city']
+            output_gdf.loc[i, 'name'] = row['city']
 
     print(output_gdf)
     return output_gdf

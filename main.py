@@ -6,10 +6,6 @@ import sys
 import geopandas as gpd
 import os
 import shutil
-import webbrowser
-
-#from dash_interface import run_dash
-
 
 DB_SCHEMA = "sa"
 TABLE_RAIL = "railways"
@@ -29,96 +25,110 @@ fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
 fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
 
 
-def extraction(config: dict) -> None:
+def extraction(config: dict, countries: str) -> None:
     """ Runs extraction
 
         Args:
             config (str): configuration dictionary
+            country (str): The country where you want to travel in Europe in international spelling
     """
-    if os.path.exists(f"{fname_rail_original}.geojson"):
-        e.info("EXTRACTION HAS ALREADY BEEN DONE")
-        return None
-
+    
     e.info("EXTRACTION: START DATA EXTRACTION")
     url = config["url"]
 
-    # Setting the queries for overpass API 
-    query_rail = e.query_rail("Portugal")
-    query_station = e.query_station("Portugal")
-    query_city = e.query_city("Portugal")
+    for country in countries:
+        # Railway data from OSM
+        if os.path.exists(f"{fname_rail_original}_{country}.geojson") == False:
+            query_rail = e.query_rail(country)
+            e.info(f"EXTRACTION: DOWNLOADING RAILS DATA IN {country}")
+            rail_data = e.get_data(url, query_rail)
+            e.save_as_json_geojson(rail_data, f"{fname_rail_original}_{country}")
+        else:
+            e.info(f"EXTRACTION OF RAILS DATA IN {country} HAS ALREADY BEEN DONE")
+        
+        # Station data from OSM
+        if os.path.exists(f"{fname_station_original}_{country}.geojson") == False: 
+            query_station = e.query_station(country)
+            e.info(f"EXTRACTION: DOWNLOADING STATION DATA IN {country}")
+            station_data = e.get_data(url, query_station)
+            e.save_as_json_geojson(station_data, f"{fname_station_original}_{country}")
+        else:
+            e.info(f"EXTRACTION OF STATIONS DATA IN {country} HAS ALREADY BEEN DONE")
 
-    # Calling the queries in the get_data from API function
-    e.info("EXTRACTION: DOWNLOADING RAILS DATA")
-    rail_data = e.get_data(url, query_rail)
+        # City data from OSM
+        if os.path.exists(f"{fname_city_original}_{country}.geojson") == False: 
+            query_city = e.query_city(country)
+            e.info(f"EXTRACTION: DOWNLOADING CITY DATA IN {country}")
+            city_data = e.get_data(url, query_city)
+            e.save_as_json_geojson(city_data, f"{fname_city_original}_{country}")
+        else:
+            e.info(f"EXTRACTION OF CITY DATA IN {country} HAS ALREADY BEEN DONE")
 
-    e.info("EXTRACTION: DOWNLOADING STATION DATA")
-    station_data = e.get_data(url, query_station)
-   
-    e.info("EXTRACTION: DOWNLOADING CITY DATA")
-    city_data = e.get_data(url, query_city)
-    
-    # Saving data with file names rail, station, city
-    e.info("EXTRACTION: SAVING RAIL DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(rail_data, fname_rail_original) 
+        e.info(f"EXTRACTION: COMPLETED IN {country}")
 
-    e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(station_data, fname_station_original)
-
-    e.info("EXTRACTION: SAVING STATION DATA AS JSON/GEOJSON")
-    e.save_as_json_geojson(city_data, fname_city_original)
-    
     e.info("EXTRACTION: COMPLETED")
 
 
-def network_preprocessing(config: dict) -> None:
+def network_preprocessing(config: dict, countries) -> None:
     """Runs transformation
 
     Args:
         config (dict): [description]
     """
-    if os.path.exists(f"{fname_rail_processed}"):
+    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
         e.info("PREPROCESSING HAS ALREADY BEEN DONE")
         return None
 
     e.info("PREPROCESSING: STARTED")
-        
-    # Reading the .json files for rail, stations, city from the folder data/original
-    rail_json = e.open_json(fname_rail_original)
-    station_json = e.open_json(fname_station_original)
-    city_json = e.open_json(fname_city_original)
 
-    # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
-    e.info("PREPROCSSING: DATA CONVERSION STARTED")
+    # create general gpd.GeoDataFrame
+    rail_all_gdf = gpd.GeoDataFrame()
+    station_all_gdf = gpd.GeoDataFrame()
+    city_all_gdf = gpd.GeoDataFrame()
 
-    cols_station = config["columns_station"]
-    station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
-    station_gdf = e.reproject(station_gdf, "EPSG:32629")
+    for country in countries:    
+        # Reading the .json files for rail, stations, city from the folder data/original
+        rail_json = e.open_json(f"{fname_rail_original}_{country}")
+        station_json = e.open_json(f"{fname_station_original}_{country}")
+        city_json = e.open_json(f"{fname_city_original}_{country}")
 
-    cols_rails = config["columns_rail"]
-    rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
-    rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
+        # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
+        e.info(f"PREPROCSSING: DATA CONVERSION FOR {country} STARTED")
 
-    cols_city = config["columns_city"]
-    city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
-    city_gdf = e.reproject(city_gdf, "EPSG:32629")
+        cols_station = config["columns_station"]
+        station_gdf = e.overpass_json_to_gpd_gdf(station_json, cols_station)
+        station_gdf = e.reproject(station_gdf, "EPSG:32629")
+        station_all_gdf = station_all_gdf.append(station_gdf, ignore_index=True)
+
+        cols_rails = config["columns_rail"]
+        rail_gdf = e.overpass_json_to_gpd_gdf(rail_json, cols_rails)
+        rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
+        rail_all_gdf = rail_all_gdf.append(rail_gdf, ignore_index=True)
+
+        cols_city = config["columns_city"]
+        city_gdf = e.overpass_json_to_gpd_gdf(city_json, cols_city)
+        city_gdf = e.reproject(city_gdf, "EPSG:32629")
+        city_all_gdf = city_all_gdf.append(city_gdf, ignore_index=True)
+
+    e.info("PREPROCSSING: MERGED ALL COUNTRIES")
 
     # Preprocess data to make it routable
     e.info("PREPROCESSING: START PREPARING ROUTABLE NETWORK")
         # snap stations to rail
     e.info("PREPROCESSING: SNAP STATIONS TO RAIL")
-    station_gdf = r.snap_with_spatial_index(station_gdf, rail_gdf, 50)
+    station_all_gdf = r.snap_spatial_index(point_gdf=station_all_gdf, line_gdf=rail_all_gdf, offset=50)
         # connect station for changing in rail_gdf
     e.info("PREPROCESSING: CONNECTING STATIONS")
-    rail_gdf = r.connect_stations(station_gdf, "name" ,rail_gdf)
+    rail_all_gdf = r.connect_points_spatial_index(point_gdf=station_all_gdf, line_gdf=rail_all_gdf, offset=500)
         # split rails at nearest station
     e.info("PREPROCESSING: SPLITTING TO SEGMENTS")
-    rail_gdf = r.split_line_by_nearest_points(rail_gdf, station_gdf)
+    rail_all_gdf = r.split_line_spatial_index(point_gdf=station_all_gdf, line_gdf=rail_all_gdf, offset=2)
     e.info("PREPROCESSING: ROUTABLE NETWORK COMPLETED")
 
     # save as shapefiles
-    e.save_as_shp(station_gdf, fname_station_processed)
-    e.save_as_shp(rail_gdf, fname_rail_processed)
-    e.save_as_shp(city_gdf, fname_city_processed)
+    e.save_as_shp(station_all_gdf, fname_station_processed)
+    e.save_as_shp(rail_all_gdf, fname_rail_processed)
+    e.save_as_shp(city_all_gdf, fname_city_processed)
 
     e.info("PREPROCESSING: COMPLETED")
 
@@ -146,24 +156,24 @@ def routing(list_input_city):
     shutil.make_archive('data/best_route', 'zip', 'data/best_route')
 
 
-def load(config: dict, chunksize: int=1000) -> None:
-    """Runs load
+#def load(config: dict, chunksize: int=1000) -> None:
+#    """Runs load
 
-    Args:
-        config (dict): configuration dictionary
-        chunksize (int): the number of rows to be inserted at one time
-    """
-    try:
-        #fname = config["fname"]
-        #db = e.DBController(**config["database"])
-        e.info("LOAD: READING DATA")
-        #df = e.read_csv(f"{PROCESSED_DIR}/{fname}")
-        e.info("LOAD: DATA READ")
-        e.info("LOAD: INSERTING DATA INTO DATABASE")
-        #db.insert_data(df, DB_SCHEMA, TABLE, chunksize=chunksize)
-        e.info("LOAD: DONE")
-    except Exception as err:
-        e.die(f"LOAD: {err}")
+#    Args:
+#        config (dict): configuration dictionary
+#        chunksize (int): the number of rows to be inserted at one time
+#    """
+#    try:
+#        fname = config["fname"]
+#        db = e.DBController(**config["database"])
+#        e.info("LOAD: READING DATA")
+#        #df = e.read_csv(f"{PROCESSED_DIR}/{fname}")
+#        e.info("LOAD: DATA READ")
+#        e.info("LOAD: INSERTING DATA INTO DATABASE")
+#        #db.insert_data(df, DB_SCHEMA, TABLE, chunksize=chunksize)
+#        e.info("LOAD: DONE")
+#    except Exception as err:
+#        e.die(f"LOAD: {err}")
 
 
 def parse_args() -> str:
@@ -192,12 +202,6 @@ def time_this_function(func, **kwargs) -> str:
     t1 = time.time()
     return f"'{func.__name__}' EXECUTED IN {t1-t0:.3f} SECONDS"
 
-
-def run_dash(script_fn):
-    e.info("INFO: RUNNIG DASH FUNCTION")
-    exec(open(script_fn).read())
-
-
 def main(config_file: str) -> None:
     """Main function for ETL
 
@@ -207,16 +211,16 @@ def main(config_file: str) -> None:
     # Read the config file
     config = e.read_config(config_file)
     
-    #country = e.inputs_country()
+    countries = e.inputs_country()
     list_input_city = e.inputs_city()
 
     # Perform the extraction
-    extraction(config)
+    extraction(config, countries)
     #msg = time_this_function(extraction, config=config)
     #e.info(msg)
 
     #Perform the transformation
-    network_preprocessing(config)
+    network_preprocessing(config, countries)
     #msg = time_this_function(transformation, config=config)
     #e.info(msg)
     
@@ -225,14 +229,11 @@ def main(config_file: str) -> None:
     #load(config, chunksize=10000)
     #msg = time_this_function(load, config=config, chunksize=1000)
     #e.info(msg)
+
     from dash1 import initiate_dash
     e.info("INFO: RUNNIG DASH")
     initiate_dash()
-    
-   
 
 if __name__ == "__main__":
     config_file = parse_args()
     main(config_file)
-    
-    
