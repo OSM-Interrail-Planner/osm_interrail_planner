@@ -75,9 +75,9 @@ def network_preprocessing(config: dict, countries) -> None:
     Args:
         config (dict): [description]
     """
-    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
-        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
-        return None
+    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
+    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+    #    return None
 
     e.info("PREPROCESSING: STARTED")
 
@@ -131,6 +131,11 @@ def network_preprocessing(config: dict, countries) -> None:
     e.save_as_shp(city_all_gdf, fname_city_processed)
 
     e.info("PREPROCESSING: COMPLETED")
+
+    all_cities_list = e.all_cities_list(city_all_gdf)
+
+    return all_cities_list
+
 
 def routing(list_input_city):
 
@@ -212,7 +217,6 @@ def main(config_file: str) -> None:
     config = e.read_config(config_file)
     
     countries = e.inputs_country()
-    list_input_city = e.inputs_city()
 
     # Perform the extraction
     extraction(config, countries)
@@ -220,10 +224,12 @@ def main(config_file: str) -> None:
     #e.info(msg)
 
     #Perform the transformation
-    network_preprocessing(config, countries)
+    all_cities_list = network_preprocessing(config, countries)
     #msg = time_this_function(transformation, config=config)
     #e.info(msg)
     
+    list_input_city = e.inputs_city(all_cities_list)
+
     routing(list_input_city)
 
     #load(config, chunksize=10000)

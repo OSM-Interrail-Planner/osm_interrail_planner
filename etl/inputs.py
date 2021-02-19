@@ -17,20 +17,18 @@ def inputs_country():
             Countries_list.append(input("What else ? "))
     return(Countries_list)
 
-def all_cities_list(cities: json):
+def all_cities_list(city_gdf):
     """
     function to extract a citys from cities Jason file
 
     Args:
-        cities (json): The downloaded Json file of cities
+        city_gdf (gpd.GeoDataFrame): The merged gdf of all cities of the countries
     """
-    all_cities_list = []
-    for n in range(0, len((list(cities.values())[3]))-1):
-        city = list(list(cities.values())[3][n].values())[4].get("name")
-        all_cities_list.append(city)
-    return(all_cities_list: list)
+    all_cities_list = list(city_gdf.name)
 
-def inputs_city():
+    return(all_cities_list)
+
+def inputs_city(all_cities_list: list):
     while True:
         try:
             Number_Of_Cities = int(input("How many cities do you want to visit? "))
