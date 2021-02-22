@@ -6,6 +6,7 @@ import main
 import etl as e
 
 config = e.read_config("config/00.yml")
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -20,13 +21,12 @@ def select_countries():
 def select_cities(str1, str2):
     country = [str1, str2]
     main.extraction(config, country)
-    main.network_preprocessing(config, country)
-    return render_template('city.html')
-
+    all_cities_list = main.network_preprocessing(config, country)
+    return render_template('city.html', option_list = all_cities_list)
 
 @app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def base(str1, str2, str3, str4, str5, str6):
-
+    print(str1)
     list_city = [str1, str2, str3, str4, str5, str6]
     main.routing(list_city)
 
