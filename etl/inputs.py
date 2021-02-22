@@ -19,7 +19,7 @@ def inputs_country():
 
 def all_cities_list(city_gdf):
     """
-    function to extract a citys from cities Jason file
+    function to extract a citys from cities GeoDataFrame
 
     Args:
         city_gdf (gpd.GeoDataFrame): The merged gdf of all cities of the countries

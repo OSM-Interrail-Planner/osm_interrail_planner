@@ -7,6 +7,7 @@ from shapely.geometry import Point, MultiPoint, LineString, MultiLineString
 from shapely.ops import nearest_points
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 import networkx as nx
 import momepy
 
@@ -300,3 +301,53 @@ def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) ->
     print(route_gdf)
 
     return(route_gdf)
+
+def cities_on_way(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int, crs: str) -> gpd.GeoDataFrame:
+    """This function selects points which intersect with the lines
+
+    Args:
+        point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
+        line_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with line geometry
+        offset (int): Tolerance for point to be snipped to line in crs metrics
+
+    Returns:
+        gpd.GeoDataFrame: Point GeoDataFrame with selection 
+    """
+    # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
+    station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
+
+    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    hits = station_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
+
+    # Create a better datastructure to relate the points to their lines in tolerance distance
+    tmp = pd.DataFrame({
+        # index of points table
+        "pt_idx": np.repeat(hits.index, hits.apply(len)),
+        # ordinal position of line - access via iloc later
+        "line_i": np.concatenate(hits.values)
+    })
+
+    # Join back to the lines on line_i 
+    tmp = tmp.join(point_gdf.reset_index(drop=True), on="pt_idx") # reset_index() to give us the ordinal position of each line
+    tmp = tmp.join(line_gdf.geometry.rename("line"), on="line_i") # join back to the original points to get their geometry and rename the point geometry as "point"   
+    tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=crs) # convert back to a GeoDataFrame, so we can do spatial ops
+
+    # Calculate the distance between each line and its associated point feature
+    tmp["dist"] = tmp.geometry.distance(gpd.GeoSeries(tmp.line))
+
+    # Discard points by distance to each rail
+    tmp = tmp.loc[tmp.dist <= offset] # discard any points that are greater than tolerance from points
+    tmp = tmp.groupby("pt_idx").first()
+    # Sort out unimportant cities
+    tmp = tmp[tmp["place"] == "city"]
+
+    tmp = tmp.reset_index()
+    tmp = tmp.drop(columns=["pt_idx", "line_i","line", "dist"])
+    tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=crs)
+
+    # Sort out unimportant cities
+    tmp = tmp[tmp["place"] == "city"]
+
+    print(tmp)
+
+    return tmp
