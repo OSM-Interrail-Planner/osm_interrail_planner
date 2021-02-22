@@ -3,7 +3,7 @@ import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import shapely.geometry as sg
-from shapely.geometry import Point, MultiPoint, MultiLineString
+from shapely.geometry import Point, MultiPoint, LineString, MultiLineString
 from shapely.ops import nearest_points
 import geopandas as gpd
 import pandas as pd
@@ -157,7 +157,15 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 index_origin = stations.index(st_origin)
                 index_destination = stations.index(st_destination)
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
-                list_path_st_origin.append(path_matrix[index_destination][index_origin])
+                path = path_matrix[index_destination][index_origin]
+                # reverse path to have the right direction
+                list_coords = list(path.coords)
+                reversed_coords = []
+                for i in range(len(list_coords)):
+                    x = -1*i
+                    x = x-1
+                    reversed_coords.append(list_coords[x])
+                list_path_st_origin.append(sg.LineString(reversed_coords))
 
             # Only calculate the path and distance new if the destination station is listed 
             # after the origin station in the stations list
@@ -166,8 +174,6 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 list_path_st_origin.append(shortest_path_result)
                 distance = shortest_path_result.length/1000
                 print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
-                ## FOR TESTING
-                ##distance = random.randint(0,1000)
                 list_dist_st_origin.append(distance)
 
             # If mirror_matrix = False just calculate everything
