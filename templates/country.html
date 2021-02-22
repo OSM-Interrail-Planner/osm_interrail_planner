@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <script>
+        function country() {
+            const str1 = document.getElementById('country1').value;
+            const str2 = document.getElementById('country2').value;
+
+            window.location.href = "/city_selection_in/" + str1 + "/" + str2;
+        }
+
+    </script>
+</head>
+<body>
+
+<section>
+    <h1>Type in your country here</h1>
+    <p><label for="country1">Country 1: <input id="country1"></label></p>
+    <p><label for="country2">Country 2: <input id="country2"></label></p>
+    <button onclick="country();">Calculate</button>
+</section>

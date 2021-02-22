@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <script>
+        function city() {
+            const str1 = document.getElementById('city1').value;
+            const str2 = document.getElementById('city2').value;
+            const str3 = document.getElementById('city3').value;
+            const str4 = document.getElementById('city4').value;
+            const str5 = document.getElementById('city5').value;
+            const str6 = document.getElementById('city6').value;
+
+            window.location.href = "/route_between/" + str1 + "/" + str2 + "/" + str3 + "/" + str4 + "/" + str5 + "/" + str6;
+        }
+
+    </script>
+</head>
+<body>
+
+<section>
+    <h1>Type in your cities here</h1>
+    <p><label for="city1">Start City: <input id="city1"></label></p>
+    <p><label for="city2">City 2: <input id="city2"></label></p>
+    <p><label for="city3">City 3: <input id="city3"></label></p>
+    <p><label for="city4">City 4: <input id="city4"></label></p>
+    <p><label for="city5">City 5: <input id="city5"></label></p>
+    <p><label for="city6">City 6: <input id="city6"></label></p>
+    <button onclick="city();">Select these cities</button>
+</section>
+
+</body>
+</html>

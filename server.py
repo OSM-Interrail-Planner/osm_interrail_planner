@@ -1,12 +1,34 @@
-from flask import Flask
+from flask import Flask, render_template, request, redirect
 import geopandas as gpd
 import folium
 import random
+import main
+import etl as e
 
+config = e.read_config("config/00.yml")
 app = Flask(__name__)
 
 @app.route("/")
-def base():
+def start():
+    return render_template('index.html')
+
+@app.route("/countries")
+def select_countries():
+    return render_template('country.html')
+
+@app.route("/city_selection_in/<str1>/<str2>")
+def select_cities(str1, str2):
+    country = [str1, str2]
+    main.extraction(config, country)
+    main.network_preprocessing(config, country)
+    return render_template('city.html')
+
+
+@app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
+def base(str1, str2, str3, str4, str5, str6):
+
+    list_city = [str1, str2, str3, str4, str5, str6]
+    main.routing(list_city)
 
     # this is base map
     map = folium.Map(

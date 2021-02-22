@@ -75,9 +75,9 @@ def network_preprocessing(config: dict, countries) -> None:
     Args:
         config (dict): [description]
     """
-    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
-    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
-    #    return None
+    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
+        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+        return None
 
     e.info("PREPROCESSING: STARTED")
 
