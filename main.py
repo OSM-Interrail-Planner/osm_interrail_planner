@@ -161,7 +161,7 @@ def routing(list_input_city):
     shutil.make_archive('data/best_route', 'zip', 'data/best_route')
 
     # select cities in proximity
-    close_cities = r.cities_on_way(city_gdf, best_route, 5000, crs="EPSG:32629")
+    close_cities = r.cities_on_way(city_gdf, best_route, list_input_city, 5000, crs="EPSG:32629")
 
     e.save_as_shp(close_cities, 'data/close_cities')
 

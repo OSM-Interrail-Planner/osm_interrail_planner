@@ -62,7 +62,7 @@ def base(str1, str2, str3, str4, str5, str6):
     gdf_close_cities["folium_geom"] = new_points
 
     #create a list of random colors
-    colors = ['orange', 'red', 'blue', 'purple', 'darkgreen', 'lightgreen', 'orange', 'brown', 'grey']
+    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', 'cadetblue', 'lightred']
 
     # make a feature group for every route
     # merge them to a feature group
@@ -83,9 +83,9 @@ def base(str1, str2, str3, str4, str5, str6):
     for i, row in gdf_close_cities.iterrows():
         fg_close.add_child(folium.CircleMarker(
             location=row["folium_geom"],
-            radius=2,
+            radius=3,
             tooltip=f"{row['name']}",
-            icon=folium.Icon(color="cadetblue")
+            icon=folium.Icon(color="darkpurple")
             ))
     map.add_child(fg_close)
 
