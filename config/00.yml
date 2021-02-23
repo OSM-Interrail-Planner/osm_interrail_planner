@@ -1,9 +1,3 @@
-database:
-  database: taxidb
-  host: localhost
-  port: 5432
-  username: postgres
-  password: 1234
 url: http://overpass-api.de/api/interpreter
 fname_rail: rail
 fname_station: station
