@@ -13,4 +13,4 @@
   relation["tourism"="attraction"](area.searchArea);
 );
 (._;);
-out center geom;
+out center;
