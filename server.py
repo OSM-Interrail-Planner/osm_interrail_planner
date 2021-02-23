@@ -57,7 +57,7 @@ def base(str1, str2, str3, str4, str5, str6):
     # create lines from shapely (lon, lat), to folium (lat, lon)
     gdf_close_cities = ff.point_geom(gdf_close_cities)
 
-    # Prepare close heri data
+    # Prepare close heritage data
     gdf_close_heris = gpd.read_file("data/close_heris").set_crs("EPSG:32629")
     gdf_close_heris = gdf_close_heris.to_crs("EPSG:4326")
     # create lines from shapely (lon, lat), to folium (lat, lon)
@@ -96,7 +96,7 @@ def base(str1, str2, str3, str4, str5, str6):
         for i, row in gdf_heris.iterrows():
             folium.Marker(
                 location=row["folium_geom"],
-                popup=f"{row['name']} of Heritage Class {row['heritage']}",
+                popup=f"{row['name']} (Heritage Class)",
                 icon=folium.Icon(color="beige", icon='university', prefix='fa')
                 ).add_to(marker_cluster)
         fg.add_child(marker_cluster)
