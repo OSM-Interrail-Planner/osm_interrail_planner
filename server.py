@@ -49,9 +49,20 @@ def base(str1, str2, str3, str4, str5, str6):
             new_line.append([point[1], point[0]])
         new_lines.append(new_line)
     gdf_best_route["folium_geom"] = new_lines
+    
+
+    # Prepare close city data
+    gdf_close_cities = gpd.read_file("data/close_cities").set_crs("EPSG:32629")
+    gdf_close_cities = gdf_close_cities.to_crs("EPSG:4326")
+    # create lines from shapely (lon, lat), to folium (lat, lon)
+    new_points = []
+    for i, row in gdf_close_cities.iterrows():
+        point = list(row["geometry"].coords)
+        new_points.append([point[0][1], point[0][0]])
+    gdf_close_cities["folium_geom"] = new_points
 
     #create a list of random colors
-    colors = ['orange', 'red', 'blue', 'purple', 'darkgreen', 'lightgreen', 'orange', 'brown', 'grey']
+    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', 'cadetblue', 'lightred']
 
     # make a feature group for every route
     # merge them to a feature group
@@ -65,6 +76,19 @@ def base(str1, str2, str3, str4, str5, str6):
             dash_array='10',
             weight=4))
         map.add_child(fg)
+    
+
+    # add close cities marker
+    fg_close = folium.FeatureGroup("Close Cities")
+    for i, row in gdf_close_cities.iterrows():
+        fg_close.add_child(folium.CircleMarker(
+            location=row["folium_geom"],
+            radius=3,
+            tooltip=f"{row['name']}",
+            icon=folium.Icon(color="darkpurple")
+            ))
+    map.add_child(fg_close)
+
 
     # add the start marker
     fg_marker = folium.FeatureGroup("Cities")

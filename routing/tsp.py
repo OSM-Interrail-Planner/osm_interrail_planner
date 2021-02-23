@@ -7,6 +7,7 @@ from shapely.geometry import Point, MultiPoint, LineString, MultiLineString
 from shapely.ops import nearest_points
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 import networkx as nx
 import momepy
 
@@ -272,31 +273,3 @@ def tsp_calculation(dict_distance_matrix: dict):
     if solution: 
         plan_output = tsp_solution(manager, routing, solution, dict_distance_matrix)
         return plan_output
-
-
-def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) -> gpd.GeoDataFrame:
-
-    plan_list = plan_output.split(' ')
-    plan_list.remove('')
-
-    # Create empty Dictionary for GeoDataFrame
-    route_dict = {'start_city': [], 'end_city': [], 'geometry': [], 'distance': [], 'order': []}
-
-    for i in range(len(plan_list)-1):
-        start_city_index = int(plan_list[i])
-        end_city_index = int(plan_list[i+1])
-        route = dict_distance_matrix['path_matrix'][start_city_index][end_city_index]
-        distance = dict_distance_matrix['distance_matrix'][start_city_index][end_city_index]
-        route_dict['start_city'].append(dict_distance_matrix['stop'][start_city_index]) 
-        route_dict['end_city'].append(dict_distance_matrix['stop'][end_city_index]) 
-        route_dict['geometry'].append(route) 
-        route_dict['distance'].append(distance) 
-        route_dict['order'].append(i+1)
-    pp.pprint(route_dict)
-
-    route_df = pd.DataFrame (route_dict, columns = ['start_city','end_city', 'geometry', 'distance', 'order'])
-    print(route_df)
-    route_gdf = gpd.GeoDataFrame(route_df, crs=crs)
-    print(route_gdf)
-
-    return(route_gdf)
