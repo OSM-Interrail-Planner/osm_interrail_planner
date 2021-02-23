@@ -21,7 +21,7 @@ def query_station(country: str):
         node["public_transport"="stop_position"]["train"="yes"]["subway"!="yes"]["station"!="subway"]["station"!="light_rail"]["light_rail"!="yes"](area.searchArea);
         );
         (._;);
-        out geom;
+        out qt geom;
         """ 
     return station_query
 
@@ -46,7 +46,7 @@ def query_rail(country: str):
         way["railway"="rail"]["disused:railway"!="rail"]["service"!~"."]["usage"!="military"]["usage"!="industrial"]["usage"!="freight"]["usage"!="tourism"](area.searchArea);
         );
         (._;);
-        out geom;
+        out qt geom;
         """
     return rail_query
 
@@ -71,6 +71,6 @@ def query_city(country: str):
         node["place"="town"](area.searchArea);
         );
         (._;);
-        out geom;
+        out qt geom;
         """
     return city_query
