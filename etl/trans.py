@@ -121,7 +121,7 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
             new_geometry['coordinates'] = geometry
         
         # 2. This second part is for ways of OSM
-        if element['type'] == 'way':
+        if element['type'] == 'way' and 'center' not in element.keys():
             # create a new_geometry dictionary
             # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
             """
@@ -139,6 +139,25 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
                 lon = node['lon']
                 lat = node['lat']
                 geometry.append((lon, lat))
+            new_geometry['coordinates'] = geometry
+
+        # 3. This third part is for ways and relations with a center point
+        if (element['type'] == 'way' and 'center' in element.keys()) or (element['type'] == 'relation' and 'center' in element.keys()):
+            # create a new_geometry dictionary
+            # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
+            """
+            [{
+                'type': 'Point',
+                'coordinates': (lon, lat)
+            }]
+            """
+            new_geometry = {}
+            # change 'type' to 'Point'
+            new_geometry['type'] = 'Point'
+            # create a new geometry point as tuple (lat, lon)    
+            lon = element['center']['lon']
+            lat = element['center']['lat']
+            geometry = [(lon, lat)]
             new_geometry['coordinates'] = geometry
             
         # Shape the new_geometry {'type': 'Linestring OR Point', 'coordinates': [(lat, lon) OR, (lat, lon)]} 

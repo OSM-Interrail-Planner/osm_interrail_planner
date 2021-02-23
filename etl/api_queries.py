@@ -74,3 +74,31 @@ def query_city(country: str):
         out geom;
         """
     return city_query
+
+
+def query_heritage(country: str):
+    """ query for extracting heritage from country x
+    Args:
+        country (str): x country name in English as an argument for the query
+
+    Returns:
+        str : query for overpass
+    """
+    heritage_query = f"""
+        // set output to json file
+        [out:json];
+        // set search area to Portugal
+        ( area[int_name="{country}"]; )->.searchArea;
+        // perform union with parenthesis
+        (
+        // AND statement by [key1=value1](and)[key2=value2]
+        node["heritage"="1"](area.searchArea);
+        node["heritage"="2"](area.searchArea);
+        way["heritage"="1"](area.searchArea);
+        way["heritage"="2"](area.searchArea);
+        relation["heritage"="1"](area.searchArea);
+        relation["heritage"="2"](area.searchArea);
+        );
+        out center;
+        """
+    return heritage_query

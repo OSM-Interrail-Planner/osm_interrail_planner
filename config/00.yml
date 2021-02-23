@@ -17,3 +17,6 @@ columns_city:
   name: str
   place: str
   population: str
+columns_heri:
+  name: str
+  heritage: str
