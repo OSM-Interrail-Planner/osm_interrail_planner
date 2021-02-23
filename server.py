@@ -22,12 +22,18 @@ def select_cities(str1, str2):
     country = [str1, str2]
     main.extraction(config, country)
     all_cities_list = main.network_preprocessing(config, country)
+    all_cities_list.append('None')
     return render_template('city.html', option_list = all_cities_list)
 
 @app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def base(str1, str2, str3, str4, str5, str6):
-    print(str1)
     list_city = [str1, str2, str3, str4, str5, str6]
+    for n in list_city:
+        if n == 'None':
+            list_city.remove(n)
+    for n in list_city:
+        if n == 'None':
+            list_city.remove(n)
     main.routing(list_city)
 
     # this is base map
