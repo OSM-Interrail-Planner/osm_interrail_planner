@@ -24,8 +24,8 @@ def all_cities_list(city_gdf):
     Args:
         city_gdf (gpd.GeoDataFrame): The merged gdf of all cities of the countries
     """
-    all_cities_list = list(city_gdf.name)
-
+    filtered_cites_gdf = city_gdf[['name','place']][city_gdf['place'] == 'city']
+    all_cities_list = list(filtered_cites_gdf['name'])
     return(all_cities_list)
 
 def inputs_city(all_cities_list: list):
