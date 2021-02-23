@@ -67,8 +67,19 @@ def base(str1, str2, str3, str4, str5, str6):
         new_points.append([point[0][1], point[0][0]])
     gdf_close_cities["folium_geom"] = new_points
 
+    # Prepare close heri data
+    gdf_close_heris = gpd.read_file("data/close_heris").set_crs("EPSG:32629")
+    gdf_close_heris = gdf_close_heris.to_crs("EPSG:4326")
+    # create lines from shapely (lon, lat), to folium (lat, lon)
+    new_points = []
+    for i, row in gdf_close_heris.iterrows():
+        point = list(row["geometry"].coords)
+        new_points.append([point[0][1], point[0][0]])
+    gdf_close_heris["folium_geom"] = new_points
+
     #create a list of random colors
     colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', 'cadetblue', 'lightred']
+    
 
     # make a feature group for every route
     # merge them to a feature group
@@ -82,19 +93,32 @@ def base(str1, str2, str3, str4, str5, str6):
             dash_array='10',
             weight=4))
         map.add_child(fg)
-    
 
     # add close cities marker
     fg_close = folium.FeatureGroup("Close Cities")
     for i, row in gdf_close_cities.iterrows():
-        fg_close.add_child(folium.CircleMarker(
+        fg_close.add_child(folium.Circle(
             location=row["folium_geom"],
             radius=3,
             tooltip=f"{row['name']}",
-            icon=folium.Icon(color="darkpurple")
+            color="black",
+            fill=True,
+            fill_color="black"
             ))
     map.add_child(fg_close)
 
+    # add close heri marker
+    fg_close_heri = folium.FeatureGroup("Close Heritages")
+    for i, row in gdf_close_heris.iterrows():
+        fg_close_heri.add_child(folium.Circle(
+            location=row["folium_geom"],
+            radius=2,
+            tooltip=f"{row['name']}, heritage {row['heritage']}",
+            color="beige",
+            fill=True,
+            fill_color="beige"
+            ))
+    map.add_child(fg_close_heri)
 
     # add the start marker
     fg_marker = folium.FeatureGroup("Cities")

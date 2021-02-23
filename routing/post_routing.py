@@ -31,7 +31,7 @@ def merge_tsp_solution(dict_distance_matrix: dict, plan_output:str, crs: str) ->
 
     return(route_gdf)
 
-def cities_on_way(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, list_input_point: list, offset: int, crs: str) -> gpd.GeoDataFrame:
+def points_on_way(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, list_input_point: list, offset: int, crs: str) -> gpd.GeoDataFrame:
     """This function selects points which intersect with the lines
 
     Args:
@@ -45,10 +45,10 @@ def cities_on_way(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, list_
         gpd.GeoDataFrame: Point GeoDataFrame with selection 
     """
     # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
-    station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
+    point_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
     # Apply an operation to this station_bbox to get a list of the lines that overlap
-    hits = station_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
+    hits = point_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
 
     # Create a better datastructure to relate the points to their lines in tolerance distance
     tmp = pd.DataFrame({
@@ -70,19 +70,16 @@ def cities_on_way(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, list_
 
     # Discard points by distance to each rail
     tmp = tmp.loc[tmp.dist <= offset] # discard any points that are greater than tolerance from points
-    # Sort out unimportant cities and duplicates
-    tmp = tmp[tmp["place"] == "city"]
-    duplicates = tmp["name"].isin(list_input_point)
-    newbies = [not b for b in duplicates]
-    tmp = tmp[newbies]
+    # Sort out unimportant cities and duplicates if closest cities are looked for
+    if "place" in tmp.columns:
+        tmp = tmp[tmp["place"] == "city"]
+        duplicates = tmp["name"].isin(list_input_point)
+        newbies = [not b for b in duplicates]
+        tmp = tmp[newbies]
 
     tmp = tmp.reset_index()
     tmp = tmp.drop(columns=["index", "pt_idx", "line", "dist"])
     tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=crs)
 
-    # Sort out unimportant cities
-    tmp = tmp[tmp["place"] == "city"]
-
-    print(tmp)
 
     return tmp
