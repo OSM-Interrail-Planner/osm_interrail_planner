@@ -17,14 +17,30 @@
 
     </script>
 </head>
+
+<style>
+    body,h1 {font-family: Verdana, Geneva, Tahoma, sans-serif}
+    body {
+      background-image: url('https://www.wapititravel.com/blog/wp-content/uploads/2020/06/Venice_Italy.jpg');
+      background-size: 1920px 1050px;
+        
+      
+      background-repeat: no-repeat;
+      
+    }
+</style> 
+
 <body>
 
 <section>
-    <h1>Type in your cities here</h1>
+    <h1 class=headline style="color:rgb(255, 255, 255);text-align:center;font-size:60px;">
+        Which cities do you want to visit?
+    </h1>
     <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
     <div id="myDropdown" class="dropdown-content">
-    <p>
-        <label for="city1">Start City: 
+
+    <p  class=selections1>
+        <label for="city1"><b> Start City:</b>  
                 <select name= option_list method="GET" action="/" id="city1">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -33,8 +49,8 @@
         </label>
     </p>
 
-    <p>
-        <label for="city2">City 2:
+    <p class=selections2>
+        <label for="city2"> <b>City 2:</b>
                 <select name= option_list method="GET" action="/" id="city2">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -43,8 +59,8 @@
         </label>
     </p>
 
-    <p>
-        <label for="city3">City 3:
+    <p class=selections3>
+        <label for="city3"><b>City 3:</b>
                 <select name= option_list method="GET" action="/" id="city3">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -53,8 +69,8 @@
         </label>
     </p>
 
-    <p>
-        <label for="city4">City 4:
+    <p class=selections4>
+        <label for="city4"><b>City 4:</b>
                 <select name= option_list method="GET" action="/" id="city4">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -63,8 +79,8 @@
         </label>
     </p>
 
-    <p>
-        <label for="city5">City 5:
+    <p class=selections5>
+        <label for="city5"><b>City 5:</b>
                 <select name= option_list method="GET" action="/" id="city5">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -73,8 +89,8 @@
         </label>
     </p>
 
-    <p>
-        <label for="city6">City 6:
+    <p class=selections6>
+        <label for="city6"><b>City 6:</b>
                 <select name= option_list method="GET" action="/" id="city6">
                 {% for o in option_list %}
                 <option value= "{{o}}" SELECTED>{{o}}</option>
@@ -108,7 +124,121 @@
         }
     </script>
 
-    <button onclick="city();">Select these cities</button>
+    <button class=button onclick="city();">Submit</button>
 </section>
+
+<style>
+
+    .headline {
+    margin: 0;
+    position: absolute;
+    top: 15%;
+    -webkit-text-stroke: 0.15px rgb(126, 125, 173);
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.search
+    {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -webkit-text-stroke: 0.15px rgb(126, 125, 173);
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections1
+    {
+    margin: 0;
+    position: absolute;
+    top: 25%;
+    -webkit-text-stroke: 0.5px rgba(128, 127, 160, 0.534);
+    left: 47%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections2
+    {
+    margin: 0;
+    position: absolute;
+    top: 30%;
+    -webkit-text-stroke:  0.5px rgba(128, 127, 160, 0.534);
+    left: 47%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections3
+    {
+    margin: 0;
+    position: absolute;
+    top: 35%;
+    -webkit-text-stroke:  0.5px rgba(128, 127, 160, 0.534);
+    left: 47%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections4
+    {
+    margin: 0;
+    position: absolute;
+    top: 40%;
+    -webkit-text-stroke:  0.5px rgba(128, 127, 160, 0.534);
+    left: 47%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections5
+    {
+    margin: 0;
+    position: absolute;
+    top: 45%;
+    -webkit-text-stroke:  0.5px rgba(128, 127, 160, 0.534);
+    left: 47%;
+    -ms-transform: translate(-50%, -50%);
+    font-size: 150%;
+    transform: translate(-50%, -50%);
+}
+
+    .selections6
+    {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -webkit-text-stroke:  0.5px rgba(174, 173, 212, 0.534);
+    left: 47%;
+    font-size: 150%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+    .button {
+        display: inline-block;
+        padding: 20px 60px;
+        border-radius: 20px;
+        background-color: tomato;
+        color: white;
+        font-size: 150%;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        margin: 0;
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+</style>
+
 </body>
 </html>
