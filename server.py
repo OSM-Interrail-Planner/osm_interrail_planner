@@ -52,16 +52,20 @@ def base(str1, str2, str3, str4, str5, str6):
     gdf_best_route = ff.line_geom(gdf_best_route)
 
     # Prepare close city data
-    gdf_close_cities = gpd.read_file("data/close_cities").set_crs("EPSG:32629")
-    gdf_close_cities = gdf_close_cities.to_crs("EPSG:4326")
-    # create lines from shapely (lon, lat), to folium (lat, lon)
-    gdf_close_cities = ff.point_geom(gdf_close_cities)
+    try:
+        gdf_close_cities = gpd.read_file("data/close_cities").set_crs("EPSG:32629")
+        gdf_close_cities = gdf_close_cities.to_crs("EPSG:4326")
+        # create lines from shapely (lon, lat), to folium (lat, lon)
+        gdf_close_cities = ff.point_geom(gdf_close_cities)
+    except: pass
 
     # Prepare close heritage data
-    gdf_close_heris = gpd.read_file("data/close_heris").set_crs("EPSG:32629")
-    gdf_close_heris = gdf_close_heris.to_crs("EPSG:4326")
-    # create lines from shapely (lon, lat), to folium (lat, lon)
-    gdf_close_heris = ff.point_geom(gdf_close_heris)
+    try: 
+        gdf_close_heris = gpd.read_file("data/close_heris").set_crs("EPSG:32629")
+        gdf_close_heris = gdf_close_heris.to_crs("EPSG:4326")
+        # create lines from shapely (lon, lat), to folium (lat, lon)
+        gdf_close_heris = ff.point_geom(gdf_close_heris)
+    except: pass
 
     #create a list of random colors
     colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', 'cadetblue', 'lightred']
@@ -78,9 +82,12 @@ def base(str1, str2, str3, str4, str5, str6):
             color=colors[i], 
             dash_array='10',
             weight=4))
-        # add the corresponding close cities
-        gdf_cities = gdf_close_cities[gdf_close_cities["line_i"]==i]
-        for j, rowj in gdf_cities.iterrows():
+        map.add_child(fg)
+
+    # add the corresponding close cities
+    try:
+        fg_cities = folium.FeatureGroup('Close Cities')
+        for j, rowj in gdf_close_cities.iterrows():
             folium.CircleMarker(
                 location=rowj["folium_geom"],
                 radius=6,
@@ -89,19 +96,23 @@ def base(str1, str2, str3, str4, str5, str6):
                 color="darkred",
                 fill=True,
                 fill_color="black"
-                ).add_to(fg)
-        # add the corresponding close heri marker
-        gdf_heris = gdf_close_heris[gdf_close_heris["line_i"]==i]
+                ).add_to(fg_cities)
+        map.add_child(fg_cities)
+    except: pass
+    
+    # add the corresponding close heri marker
+    try:
+        fg_heris = folium.FeatureGroup('Close Heritages')
         marker_cluster = MarkerCluster()
-        for i, row in gdf_heris.iterrows():
+        for i, row in gdf_close_heris.iterrows():
             folium.Marker(
                 location=row["folium_geom"],
                 popup=f"{row['name']} (Heritage Class)",
                 icon=folium.Icon(color="beige", icon='university', prefix='fa')
                 ).add_to(marker_cluster)
-        fg.add_child(marker_cluster)
-
-        map.add_child(fg)
+        fg_heris.add_child(marker_cluster)
+        map.add_child(fg_heris)
+    except: pass
 
     # add the start marker
     fg_marker = folium.FeatureGroup("Destination Cities")
