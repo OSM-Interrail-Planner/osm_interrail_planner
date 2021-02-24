@@ -87,14 +87,15 @@ def network_preprocessing(config: dict, countries) -> None:
     Args:
         config (dict): [description]
     """
-    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
+
+    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
         
-        city_all_gdf = gpd.read_file(fname_city_processed)
-        all_cities_list = e.all_cities_list(city_all_gdf)
+    #    city_all_gdf = gpd.read_file(fname_city_processed)
+    #    all_cities_list = e.all_cities_list(city_all_gdf)
 
-        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
 
-        return all_cities_list
+    #    return all_cities_list
 
     e.info("PREPROCESSING: STARTED")
 
@@ -186,11 +187,15 @@ def routing(list_input_city):
 
     # select cities in proximity
     close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs="EPSG:32629")
-    e.save_as_shp(close_cities, 'data/close_cities')
+    try:
+        e.save_as_shp(close_cities, 'data/close_cities')
+    except: pass
 
     # select heritages in proximity
     close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs="EPSG:32629")
-    e.save_as_shp(close_heris, 'data/close_heris')
+    try:
+        e.save_as_shp(close_heris, 'data/close_heris')
+    except: pass
 
 
 def parse_args() -> str:
