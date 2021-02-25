@@ -87,7 +87,7 @@ def query_heritage(country: str):
     heritage_query = f"""
         // set output to json file
         [out:json];
-        // set search area to Portugal
+        // set search area to country
         ( area[int_name="{country}"]; )->.searchArea;
         // perform union with parenthesis
         (
@@ -102,3 +102,28 @@ def query_heritage(country: str):
         out center;
         """
     return heritage_query
+
+
+def query_nature(country: str):
+    """ query for extracting natural parks from country x
+    Args:
+        country (str): x country name in English as an argument for the query
+
+    Returns:
+        str : query for overpass
+    """
+    nature_query = f"""
+        // set output to json file
+        [out:json];
+        // set search area to country
+        ( area[int_name="{country}"]; )->.searchArea;
+        // perform union with parenthesis
+        (
+        // AND statement by [key1=value1](and)[key2=value2]
+        way["leisure"="nature_reserve"](area.searchArea);
+        relation["boundary"="protected_area"]["leisure"="nature_reserve"](area.searchArea);
+        );
+        (._;);
+        out geom;
+        """
+    return nature_query

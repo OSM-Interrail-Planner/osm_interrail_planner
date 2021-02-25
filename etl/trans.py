@@ -2,6 +2,7 @@ import geojson
 import json
 import shapely.geometry as sg
 import geopandas as gpd
+import osm2geojson
 
 
 def open_json(filename):
@@ -15,7 +16,7 @@ def open_json(filename):
     with open(f"{filename}.json") as file1:
         data = json.load(file1)
     return data
-        
+
 
 # Besides the geometry columns we want to extract attributes of the OSM tags and store them in columns
 # Therefore this function creates dictionaries for each tag from the raw OSM JSON and is afterwards 
@@ -101,7 +102,7 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
         # create a new element dictionary which stands for one element
         new_element = {}
         
-        # 1. This first part is for nodes of OSM
+        # 1. This part is for nodes of OSM
         if element['type'] == 'node':
             # create a new_geometry dictionary
             # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
@@ -120,7 +121,7 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
             geometry = [(lon, lat)]
             new_geometry['coordinates'] = geometry
         
-        # 2. This second part is for ways of OSM
+        # 2. This part is for ways of OSM
         if element['type'] == 'way' and 'center' not in element.keys():
             # create a new_geometry dictionary
             # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
@@ -141,7 +142,30 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
                 geometry.append((lon, lat))
             new_geometry['coordinates'] = geometry
 
-        # 3. This third part is for ways and relations with a center point
+        # 3. This part is for polygons of relation of OSM
+        if element['type'] == 'relation' and 'center' not in element.keys():
+            # create a new_geometry dictionary
+            # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
+            """
+            [{
+                'type': 'Polygon',
+                'coordinates': [(lon, lat), (lon, lat)]
+            }]
+            """
+            new_geometry = {}
+            # change 'type' to 'LineString'
+            new_geometry['type'] = 'Polygon'
+            # create a list of geometries
+            geometry = []
+            for member in element['members']:
+                if member['type'] == 'way':
+                    for node in member['geometry']:
+                        lon = node['lon']
+                        lat = node['lat']
+                        geometry.append((lon, lat))
+            new_geometry['coordinates'] = geometry
+
+        # 4. This part is for ways and relations with a center point
         if (element['type'] == 'way' and 'center' in element.keys()) or (element['type'] == 'relation' and 'center' in element.keys()):
             # create a new_geometry dictionary
             # data structure for new_geometry to be shaped with function shapely.geometry.shape() afterwards
@@ -162,7 +186,10 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
             
         # Shape the new_geometry {'type': 'Linestring OR Point', 'coordinates': [(lat, lon) OR, (lat, lon)]} 
         # and append it as under the tag 'geometry' in the new_element dictionary
-        new_element['geometry'] = sg.shape(new_geometry)
+        if new_geometry['type'] == 'Polygon':
+            new_element['geometry'] = sg.Polygon(new_geometry['coordinates'])
+        else:
+            new_element['geometry'] = sg.shape(new_geometry)
 
         # Append atribute tags if available
         append_tags(element, new_element, desired_tags)
@@ -183,6 +210,64 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
     return gdf
 
 
+def convert_to_gdf(json_file: json, desired_tags: dict) -> gpd.GeoDataFrame:
+    """This function converts an Overpass json to gpd. GeoDataFrame with the desired attributes
+
+    Args:
+        json_file (json)
+        desired_tags (dict)
+
+    Returns:
+        gpd.GeoDataFrame
+    """
+
+    shape = osm2geojson.json2shapes(json_file)
+    shape_gdf = gpd.GeoDataFrame(shape, geometry = "shape", crs="EPSG:4326")
+
+    
+    def extract_value(row, key):
+        try:
+            value = row["properties"]["tags"][key]
+        except:
+            value = 'nan'
+        
+        return value
+
+    for tag in desired_tags.keys():
+        shape_gdf[tag] = shape_gdf.apply(lambda row: extract_value(row, tag), axis=1)
+    
+    shape_gdf = shape_gdf.rename_geometry('geometry')
+    shape_gdf = shape_gdf.drop(["properties"], axis=1)
+
+    return shape_gdf
+
+
+def way_to_polygon(geo_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """This function converts possible LineStrings into Polygons
+
+    Args:
+        geo_df (gpd.GeoDataFrame)
+
+    Returns:
+        gpd.GeoDataFrame
+    """
+
+    def check_geom_type(row):
+        if row["geometry"].geom_type == 'LineString':
+            try:
+                geo = sg.Polygon(list(row["geometry"].coords))
+            except:
+                geo = None
+            return geo
+        else:
+            return row["geometry"]
+
+    geo_df["geometry"] = geo_df.apply(lambda row: check_geom_type(row), axis=1)
+    geo_df = geo_df[geo_df["geometry"]!=None]
+
+    return geo_df
+
+
 def reproject(geodf: gpd.GeoDataFrame, epsg: str) -> gpd.GeoDataFrame:
     """This function reprojects a GeoDataFrame to the given EPSG-Code
 
@@ -196,7 +281,7 @@ def reproject(geodf: gpd.GeoDataFrame, epsg: str) -> gpd.GeoDataFrame:
 
     return geodf.to_crs(epsg)
 
-def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
+def save_as_shp(geo_df: gpd.GeoDataFrame, fname: str) -> None:
     """
     This function saves a geopandas.Geodataframe as a shapefile
 
@@ -204,4 +289,4 @@ def save_as_shp(geodf: gpd.GeoDataFrame, fname: str) -> None:
         geodf (gpd.GeoDataFrame): The geodata
         fname (str): directory path to store the data 
     """
-    geodf.to_file(driver = 'ESRI Shapefile', filename= f"{fname}")
+    geo_df.to_file(driver = 'ESRI Shapefile', filename= f"{fname}")
