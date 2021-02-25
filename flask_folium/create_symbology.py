@@ -12,7 +12,7 @@ def add_route_to_map(gdf_best_route: gpd.GeoDataFrame, basemap):
         basemap ([type])
     """
     #create a list of random colors
-    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#b17b70', 'cadetblues']
+    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#364e4a', 'cadetblues']
     
     # make a feature group for every route
     # merge them to a feature group
@@ -89,7 +89,7 @@ def add_starters_to_map(gdf_best_route: gpd.GeoDataFrame, basemap):
         basemap ([type])
     """
     #create a list of random colors
-    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#b17b70', 'cadetblue']
+    colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#364e4a', 'cadetblue']
     fg_marker = folium.FeatureGroup("Destination Cities")
     for i, row in gdf_best_route.iterrows():
         fg_marker.add_child(folium.Marker(
