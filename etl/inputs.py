@@ -26,6 +26,7 @@ def all_cities_list(city_gdf):
     """
     #filtered_cites_gdf = city_gdf[['name','place']][city_gdf['place'] == 'city']
     #all_cities_list = list(filtered_cites_gdf['name'])
+    city_gdf = city_gdf.replace(to_replace= "/", value= ";", regex=True)
     all_cities_list = list(city_gdf['name'])
     return(all_cities_list)
 
