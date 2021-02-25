@@ -88,14 +88,14 @@ def network_preprocessing(config: dict, countries) -> None:
         config (dict): [description]
     """
 
-    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
+    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
         
-    #    city_all_gdf = gpd.read_file(fname_city_processed)
-    #    all_cities_list = e.all_cities_list(city_all_gdf)
+        city_all_gdf = gpd.read_file(fname_city_processed)
+        all_cities_list = e.all_cities_list(city_all_gdf)
 
-    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
 
-    #    return all_cities_list
+        return all_cities_list
 
     e.info("PREPROCESSING: STARTED")
 

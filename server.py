@@ -127,8 +127,10 @@ def base(str1, str2, str3, str4, str5, str6):
   
     map.add_child(folium.LayerControl())
     
-    head = """<h1 style="color:rgb(126, 125, 173);text-align:center;font-size:30px;background-color: rgb(218, 233, 166, 0.7);">
-                Hello Team! </h1>"""
+    head = """ 
+    <h1 style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(0, 0, 0);float: center;text-align:center;font-size:30px;">
+                Here's your optomized route: </h1>
+                """
 
     return head + map._repr_html_()
 
