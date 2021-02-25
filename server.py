@@ -6,6 +6,7 @@ import random
 import main
 import etl as e
 import flask_folium as ff
+from datetime import datetime, time
 
 config = e.read_config("config/00.yml")
 
@@ -125,8 +126,11 @@ def base(str1, str2, str3, str4, str5, str6):
     map.add_child(fg_marker)
   
     map.add_child(folium.LayerControl())
+    
+    head = """<h1 style="color:rgb(126, 125, 173);text-align:center;font-size:30px;background-color: rgb(218, 233, 166, 0.7);">
+                Hello Team! </h1>"""
 
-    return map._repr_html_()
+    return head + map._repr_html_()
 
 if __name__ == "__main__":
     app.run(debug=True)

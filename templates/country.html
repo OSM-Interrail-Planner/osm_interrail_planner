@@ -10,7 +10,6 @@
 
             window.location.href = "/city_selection_in/" + str1 + "/" + str2;
         }
-
     </script>
 </head>
 
@@ -27,14 +26,15 @@
 </style> 
 
 <body>
-
-
+    <p class = box> </p>
+    <p class = box2> </p>
     <h1 class=headline style="color:rgb(255, 255, 255);text-align:center;font-size:60px;">
         Which countries do you want to visit?
     </h1>
-
     <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:30px;"><label for="country1">Country 1: <input id="country1"></label></p>
+
     <p class=selections2 style="color:rgb(5, 5, 5);text-align:center;font-size:30px;"><label for="country2">Country 2: <input id="country2"></label></p>
+
     <button class=button onclick="country();">Submit</button>
     
 
@@ -73,11 +73,36 @@
         transform: translate(-50%, -50%);
     }
 
+        .box {
+            opacity: 0.7;
+            border: 1px dashed rgba(33, 104, 126, 0.911);
+            background-color: rgb(218, 233, 166);
+            width: 325px;
+            height: 20px;
+            padding: 10px;
+            position: absolute;
+            top: 51%;
+            left: 40.5%;
+            margin: -25px 0 0 -25px;
+        }
+
+        .box2 {
+            opacity: 0.7;
+            border: 1px dashed rgba(33, 104, 126, 0.911);
+            background-color: rgb(218, 233, 166);
+            width: 325px;
+            height: 20px;
+            padding: 10px;
+            position: absolute;
+            top: 44%;
+            left: 40.5%;
+            margin: -25px 0 0 -25px;
+        }
         .button {
             display: inline-block;
             padding: 20px 60px;
             border-radius: 20px;
-            background-color: tomato;
+            background-color: rgba(240, 65, 34, 0.63);
             color: white;
             font-size: 150%;
             font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -89,5 +114,4 @@
             transform: translate(-50%, -50%);
         }
     </style>
-    
 </body>
