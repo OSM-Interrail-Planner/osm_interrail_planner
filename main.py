@@ -20,6 +20,7 @@ NAME_NATU = "nature"
 COLUMNS_NATU = {"name": str, "website": str}
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
+EPSG = "EPSG:32629"
 
 # Create the filenames for folder data/original
 fname_rail_original = e.create_fname(NAME_RAIL, DOWNLOAD_DIR)
@@ -132,24 +133,24 @@ def network_preprocessing(countries) -> None:
         # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
         e.info(f"PREPROCSSING: DATA CONVERSION FOR {country} STARTED")
 
-        station_gdf = e.convert_to_gdf(station_json, COLUMNS_STAT)
-        station_gdf = e.reproject(station_gdf, "EPSG:32629")
+        station_gdf = e.convert_to_gdf(station_json, COLUMNS_STAT, ['Point', 'MultiPoint'])
+        station_gdf = e.reproject(station_gdf, EPSG)
         station_all_gdf = station_all_gdf.append(station_gdf, ignore_index=True)
 
-        rail_gdf = e.convert_to_gdf(rail_json, COLUMNS_RAIL)
-        rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
+        rail_gdf = e.convert_to_gdf(rail_json, COLUMNS_RAIL, ['LineString', 'MulitLineString'])
+        rail_gdf = e.reproject(rail_gdf, EPSG)
         rail_all_gdf = rail_all_gdf.append(rail_gdf, ignore_index=True)
 
-        city_gdf = e.convert_to_gdf(city_json, COLUMNS_CITY)
-        city_gdf = e.reproject(city_gdf, "EPSG:32629")
+        city_gdf = e.convert_to_gdf(city_json, COLUMNS_CITY, ['Point', 'MultiPoint'])
+        city_gdf = e.reproject(city_gdf, EPSG)
         city_all_gdf = city_all_gdf.append(city_gdf, ignore_index=True)
 
-        heri_gdf = e.overpass_json_to_gpd_gdf(heri_json, COLUMNS_HERI)
-        heri_gdf = e.reproject(heri_gdf, "EPSG:32629")
+        heri_gdf = e.overpass_json_to_gpd_gdf(heri_json, COLUMNS_HERI, ['Point', 'MultiPoint'])
+        heri_gdf = e.reproject(heri_gdf, EPSG)
         heri_all_gdf = heri_all_gdf.append(heri_gdf, ignore_index=True)
 
-        natu_gdf = e.convert_to_gdf(natu_json, COLUMNS_NATU)
-        natu_gdf = e.reproject(natu_gdf, "EPSG:32629")
+        natu_gdf = e.convert_to_gdf(natu_json, COLUMNS_NATU, [])
+        natu_gdf = e.reproject(natu_gdf, EPSG)
         natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
 
@@ -200,25 +201,25 @@ def routing(list_input_city):
     plan_output = r.tsp_calculation(dict_distance_matrix)
 
     # create GeoDataFrame ot of the plan_output
-    best_route = r.merge_tsp_solution(dict_distance_matrix, plan_output, crs="EPSG:32629")
+    best_route = r.merge_tsp_solution(dict_distance_matrix, plan_output, crs=EPSG)
     e.info("ROUTING: SOLVING TSP COMPLETED")
     
     e.save_as_shp(best_route, 'data/route/best_route')
 
     # select cities in proximity
-    close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs="EPSG:32629")
+    close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs=EPSG)
     try:
         e.save_as_shp(close_cities, 'data/route/close_cities')
     except: e.info("no close cities on your best route")
 
     # select heritages in proximity
-    close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs="EPSG:32629")
+    close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs=EPSG)
     try:
         e.save_as_shp(close_heris, 'data/route/close_heris')
     except: e.info("no close heritag sites on your best route")
 
     # select nature in proximity
-    close_natus = r.points_on_way(natu_gdf, best_route, [], 20000, crs="EPSG:32629")
+    close_natus = r.points_on_way(natu_gdf, best_route, [], 20000, crs=EPSG)
     try:
         e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")

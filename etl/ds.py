@@ -3,15 +3,16 @@ import requests
 import json as js
 import osm2geojson as o2g
 import geojson as geojs
-import http
 
 
 def get_data(overpass_url: str, query: str, obj_name: str, country: str):
     """
     This function sends the query for the OSM Overpass API in string format and gives back a JSON response object
     Args:
-        query: str = Query in string format of Overpass query language
-        url: str = url in string format from config file
+        query(str): Query in string format of Overpass query language
+        url(str): Url in string format from config file
+        obj_name(str): Takes the name of the object for error message
+        country (str): Takes the name of the country for error message
     Returns: 
         A response data object in json format containing OSM data
     """
@@ -51,7 +52,7 @@ def create_fname(fname: str, directory: str):
     return fname
 
 
-def save_as_json_geojson(overpass_json, filename):
+def save_as_json_geojson(overpass_json, filename: str):
     """This function saves the overpass query results in folder original in json format in a json file and geojson file
     Arg:
         overpass_json = Json format of the Overpass result
@@ -60,7 +61,6 @@ def save_as_json_geojson(overpass_json, filename):
         data\original\filename.json
         data\original\filename.geojson
     """
- 
     # Save as normal json file
     with open(f"{filename}.json", mode="w") as file1:
         geojs.dump(overpass_json, file1)

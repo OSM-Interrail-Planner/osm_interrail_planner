@@ -1,9 +1,7 @@
-
-
 def query_station(country: str):
     """ query for extracting stations from country x
     Args:
-        country (str): x country name in English as an argument for the query
+        country (str): x country name in English (osm tag: int_name) as an argument for the query
 
     Returns:
         str : query for overpass
@@ -29,7 +27,7 @@ def query_station(country: str):
 def query_rail(country: str):
     """ query for extracting railways from country x
     Args:
-        country (str): x country name in English as an argument for the query
+        country (str): x country name in English (osm tag: int_name) as an argument for the query
 
     Returns:
         str : query for overpass
@@ -54,7 +52,7 @@ def query_rail(country: str):
 def query_city(country: str):
     """ query for extracting cities from country x
     Args:
-        country (str): x country name in English as an argument for the query
+        country (str): x country name in English (osm tag: int_name) as an argument for the query
 
     Returns:
         str : query for overpass
@@ -79,7 +77,7 @@ def query_city(country: str):
 def query_heritage(country: str):
     """ query for extracting heritage from country x
     Args:
-        country (str): x country name in English as an argument for the query
+        country (str): x country name in English (osm tag: int_name) as an argument for the query
 
     Returns:
         str : query for overpass
@@ -107,7 +105,7 @@ def query_heritage(country: str):
 def query_nature(country: str):
     """ query for extracting natural parks from country x
     Args:
-        country (str): x country name in English as an argument for the query
+        country (str): x country name in English (osm tag: int_name) as an argument for the query
 
     Returns:
         str : query for overpass
