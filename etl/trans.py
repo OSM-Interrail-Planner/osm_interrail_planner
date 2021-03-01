@@ -200,13 +200,6 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags) -> gpd.GeoDataFrame:
     # Transform it to a gpd geodataframe
     gdf = gpd.GeoDataFrame(new_data, crs="EPSG:4326")
 
-    # Create a dictionary for converting the datatypes of the columns   
-    new_dtype_dict = {}
-    for column in desired_tags.keys():
-        new_dtype_dict[column] = eval(desired_tags[column])
-
-    # Convert the datatypes of the columns    
-    gdf = gdf.astype(new_dtype_dict)
     return gdf
 
 

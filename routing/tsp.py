@@ -1,4 +1,3 @@
-import random
 import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
@@ -10,6 +9,7 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import momepy
+import etl as e
 
 
 def city_to_station(gdf_city, gdf_station, list_input_city):
@@ -143,20 +143,22 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
 
     # Loop over all stations as origins
     for st_origin in stations:
+        index_origin = stations.index(st_origin)
         list_dist_st_origin = []
         list_path_st_origin = []
+
         # Loop over all stations as destinations
         for st_destination in stations:
+            index_destination = stations.index(st_destination)
+
             # If station origin and station destination are the same insert distance = 0 or path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
                 list_path_st_origin.append(None)
 
-            # If the destination is listed before the origin in the stations the path and distance has already been 
+            # If the destination is listed before the origin in the stations the path and the path is valid, the distance has already been 
             # calculated. So it can be appended already by distance_matrix[index_destination][index_origin]
-            elif (stations.index(st_destination)) < stations.index(st_origin) and (mirror_matrix == True):
-                index_origin = stations.index(st_origin)
-                index_destination = stations.index(st_destination)
+            elif (index_destination < index_origin) and (mirror_matrix == True):
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
                 path = path_matrix[index_destination][index_origin]
                 # reverse path to have the right direction
@@ -170,30 +172,58 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
 
             # Only calculate the path and distance new if the destination station is listed 
             # after the origin station in the stations list
-            elif stations.index(st_destination) > stations.index(st_origin) and (mirror_matrix == True):
-                shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
-                list_path_st_origin.append(shortest_path_result)
-                distance = shortest_path_result.length/1000
-                print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
-                list_dist_st_origin.append(distance)
+            elif (index_destination > index_origin) and (mirror_matrix == True):
+                try:    
+                    shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
+                    list_path_st_origin.append(shortest_path_result)
+                    distance = shortest_path_result.length/1000
+                    print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
+                    list_dist_st_origin.append(distance)
+                # if the calculation of shortest path fails, add high distance and None object as path
+                except:
+                    # try to go to to another destination station to check if the origin is the problem
+                    index_dest_trial = 0
+                    while index_dest_trial < len(stations):
+                        try:
+                            dest_trial = stations[index_dest_trial]
+                            shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
+                        except:
+                            index_dest_trial += 1
+                        else: # if try worked
+                            e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
+                    # if the while loop hasn't stop by the die unction yet, the origin station is the problem
+                    e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
 
             # If mirror_matrix = False just calculate everything
             else:
-                shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
-                list_path_st_origin.append(shortest_path_result)
-                distance = shortest_path_result.length/1000
-                ## FOR TESTING
-                ##distance = random.randint(0,1000)
-                list_dist_st_origin.append(distance)
+                try:
+                    shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
+                    list_path_st_origin.append(shortest_path_result)
+                    distance = shortest_path_result.length/1000
+                    list_dist_st_origin.append(distance)
+                # if the calculation of shortest path fails, dies
+                except: 
+                    # try to go to to another destination station to check if the origin is the problem
+                    index_dest_trial = 0
+                    while index_dest_trial < len(stations):
+                        try:
+                            dest_trial = stations[index_dest_trial]
+                            shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
+                        except:
+                            index_dest_trial += 1
+                        else: # if try worked
+                            e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
+                    # if the while loop hasn't stop by the die unction yet, the origin station is the problem
+                    e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
 
-        # After all distances from the origin station have been calculated append it to the matrix
+
+        # After all distances from the origin station have been calculated check if it can be reached and append it to the matrix
         distance_matrix.append(list_dist_st_origin)
         path_matrix.append(list_path_st_origin)
 
         # Reset the distance and list to an empty list
         list_dist_st_origin = []
         list_path_st_origin = []
-
 
     # After the matrices have been created insert it to the dictionary
     dict_distance_matrix["distance_matrix"] = distance_matrix

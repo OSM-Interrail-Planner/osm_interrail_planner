@@ -7,29 +7,35 @@ import geopandas as gpd
 import os
 import shutil
 
-TABLE_RAIL = "railways"
-TABLE_STAT = "stations"
-TABLE_CITY = "cities"
-TABLE_HERI = "heritage"
-TABLE_NATU = "nature"
+URL = "http://overpass-api.de/api/interpreter"
+NAME_RAIL = "railways"
+COLUMNS_RAIL = {"name": str}
+NAME_STAT = "stations"
+COLUMNS_STAT = {"name": str, "network": str}
+NAME_CITY = "cities"
+COLUMNS_CITY = {"name": str, "place": str, "population": str}
+NAME_HERI = "heritage"
+COLUMNS_HERI = {"name": str, "heritage": str}
+NAME_NATU = "nature"
+COLUMNS_NATU = {"name": str, "website": str}
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 
 # Create the filenames for folder data/original
-fname_rail_original = e.create_fname(TABLE_RAIL, DOWNLOAD_DIR)
-fname_station_original = e.create_fname(TABLE_STAT, DOWNLOAD_DIR)
-fname_city_original = e.create_fname(TABLE_CITY, DOWNLOAD_DIR)
-fname_heri_original = e.create_fname(TABLE_HERI, DOWNLOAD_DIR)
-fname_natu_original = e.create_fname(TABLE_NATU, DOWNLOAD_DIR)
+fname_rail_original = e.create_fname(NAME_RAIL, DOWNLOAD_DIR)
+fname_station_original = e.create_fname(NAME_STAT, DOWNLOAD_DIR)
+fname_city_original = e.create_fname(NAME_CITY, DOWNLOAD_DIR)
+fname_heri_original = e.create_fname(NAME_HERI, DOWNLOAD_DIR)
+fname_natu_original = e.create_fname(NAME_NATU, DOWNLOAD_DIR)
 
 # Create the filenames for folder data/processed
-fname_rail_processed= e.create_fname(TABLE_RAIL, PROCESSED_DIR)
-fname_station_processed = e.create_fname(TABLE_STAT, PROCESSED_DIR)
-fname_city_processed = e.create_fname(TABLE_CITY, PROCESSED_DIR)
-fname_heri_processed = e.create_fname(TABLE_HERI, PROCESSED_DIR)
-fname_natu_processed = e.create_fname(TABLE_NATU, PROCESSED_DIR)
+fname_rail_processed= e.create_fname(NAME_RAIL, PROCESSED_DIR)
+fname_station_processed = e.create_fname(NAME_STAT, PROCESSED_DIR)
+fname_city_processed = e.create_fname(NAME_CITY, PROCESSED_DIR)
+fname_heri_processed = e.create_fname(NAME_HERI, PROCESSED_DIR)
+fname_natu_processed = e.create_fname(NAME_NATU, PROCESSED_DIR)
 
-def extraction(config: dict, countries: str) -> None:
+def extraction(countries: str) -> None:
     """ Runs extraction
 
         Args:
@@ -38,14 +44,13 @@ def extraction(config: dict, countries: str) -> None:
     """
     
     e.info("EXTRACTION: START DATA EXTRACTION")
-    url = config["url"]
 
     for country in countries:
         # Railway data from OSM
         if os.path.exists(f"{fname_rail_original}_{country}.geojson") == False:
             query_rail = e.query_rail(country)
             e.info(f"EXTRACTION: DOWNLOADING RAILS DATA IN {country}")
-            rail_data = e.get_data(url, query_rail, 'Railways', country)
+            rail_data = e.get_data(URL, query_rail, 'Railways', country)
             e.save_as_json_geojson(rail_data, f"{fname_rail_original}_{country}")
         else:
             e.info(f"EXTRACTION OF RAILS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -54,7 +59,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_station_original}_{country}.geojson") == False: 
             query_station = e.query_station(country)
             e.info(f"EXTRACTION: DOWNLOADING STATION DATA IN {country}")
-            station_data = e.get_data(url, query_station, 'Stations', country)
+            station_data = e.get_data(URL, query_station, 'Stations', country)
             e.save_as_json_geojson(station_data, f"{fname_station_original}_{country}")
         else:
             e.info(f"EXTRACTION OF STATIONS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -63,7 +68,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_city_original}_{country}.geojson") == False: 
             query_city = e.query_city(country)
             e.info(f"EXTRACTION: DOWNLOADING CITY DATA IN {country}")
-            city_data = e.get_data(url, query_city, 'City', country)
+            city_data = e.get_data(URL, query_city, 'City', country)
             e.save_as_json_geojson(city_data, f"{fname_city_original}_{country}")
         else:
             e.info(f"EXTRACTION OF CITY DATA IN {country} HAS ALREADY BEEN DONE")
@@ -72,7 +77,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_heri_original}_{country}.geojson") == False: 
             query_heri = e.query_heritage(country)
             e.info(f"EXTRACTION: DOWNLOADING HERITAGE DATA IN {country}")
-            heri_data = e.get_data(url, query_heri, 'Heritage', country)
+            heri_data = e.get_data(URL, query_heri, 'Heritage', country)
             e.save_as_json_geojson(heri_data, f"{fname_heri_original}_{country}")
         else:
             e.info(f"EXTRACTION OF HERITAGE DATA IN {country} HAS ALREADY BEEN DONE")
@@ -81,7 +86,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_natu_original}_{country}.geojson") == False: 
             query_natu = e.query_nature(country)
             e.info(f"EXTRACTION: DOWNLOADING NATURE DATA IN {country}")
-            natu_data = e.get_data(url, query_natu, 'Natural Parks', country)
+            natu_data = e.get_data(URL, query_natu, 'Natural Parks', country)
             e.save_as_json_geojson(natu_data, f"{fname_natu_original}_{country}")
         else:
             e.info(f"EXTRACTION OF NATURE DATA IN {country} HAS ALREADY BEEN DONE")
@@ -91,21 +96,21 @@ def extraction(config: dict, countries: str) -> None:
     e.info("EXTRACTION: COMPLETED")
 
 
-def network_preprocessing(config: dict, countries) -> None:
+def network_preprocessing(countries) -> None:
     """Runs transformation
 
     Args:
-        config (dict): [description]
+        countries: Description
     """
 
-    if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
+    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
         
-        city_all_gdf = gpd.read_file(fname_city_processed)
-        all_cities_list = e.all_cities_list(city_all_gdf)
+    #    city_all_gdf = gpd.read_file(fname_city_processed)
+    #    all_cities_list = e.all_cities_list(city_all_gdf)
 
-        e.info("PREPROCESSING HAS ALREADY BEEN DONE")
+    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
 
-        return all_cities_list
+    #    return all_cities_list
 
     e.info("PREPROCESSING: STARTED")
 
@@ -127,28 +132,23 @@ def network_preprocessing(config: dict, countries) -> None:
         # Convert the OSM JSON to a gpd.GeoDataFrame and store in the folder data/processed as shapefile
         e.info(f"PREPROCSSING: DATA CONVERSION FOR {country} STARTED")
 
-        cols_station = config["columns_station"]
-        station_gdf = e.convert_to_gdf(station_json, cols_station)
+        station_gdf = e.convert_to_gdf(station_json, COLUMNS_STAT)
         station_gdf = e.reproject(station_gdf, "EPSG:32629")
         station_all_gdf = station_all_gdf.append(station_gdf, ignore_index=True)
 
-        cols_rails = config["columns_rail"]
-        rail_gdf = e.convert_to_gdf(rail_json, cols_rails)
+        rail_gdf = e.convert_to_gdf(rail_json, COLUMNS_RAIL)
         rail_gdf = e.reproject(rail_gdf, "EPSG:32629")
         rail_all_gdf = rail_all_gdf.append(rail_gdf, ignore_index=True)
 
-        cols_city = config["columns_city"]
-        city_gdf = e.convert_to_gdf(city_json, cols_city)
+        city_gdf = e.convert_to_gdf(city_json, COLUMNS_CITY)
         city_gdf = e.reproject(city_gdf, "EPSG:32629")
         city_all_gdf = city_all_gdf.append(city_gdf, ignore_index=True)
 
-        cols_heri = config["columns_heri"]
-        heri_gdf = e.overpass_json_to_gpd_gdf(heri_json, cols_heri)
+        heri_gdf = e.overpass_json_to_gpd_gdf(heri_json, COLUMNS_HERI)
         heri_gdf = e.reproject(heri_gdf, "EPSG:32629")
         heri_all_gdf = heri_all_gdf.append(heri_gdf, ignore_index=True)
 
-        cols_natu = config["columns_natu"]
-        natu_gdf = e.convert_to_gdf(natu_json, cols_natu)
+        natu_gdf = e.convert_to_gdf(natu_json, COLUMNS_NATU)
         natu_gdf = e.reproject(natu_gdf, "EPSG:32629")
         natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
@@ -203,22 +203,22 @@ def routing(list_input_city):
     best_route = r.merge_tsp_solution(dict_distance_matrix, plan_output, crs="EPSG:32629")
     e.info("ROUTING: SOLVING TSP COMPLETED")
     
-    e.save_as_shp(best_route, 'data/best_route')
+    e.save_as_shp(best_route, 'data/route/best_route')
 
     # select cities in proximity
     close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs="EPSG:32629")
     try:
-        e.save_as_shp(close_cities, 'data/close_cities')
+        e.save_as_shp(close_cities, 'data/route/close_cities')
     except: e.info("no close cities on your best route")
 
     # select heritages in proximity
     close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs="EPSG:32629")
     try:
-        e.save_as_shp(close_heris, 'data/close_heris')
+        e.save_as_shp(close_heris, 'data/route/close_heris')
     except: e.info("no close heritag sites on your best route")
 
     # select nature in proximity
     close_natus = r.points_on_way(natu_gdf, best_route, [], 20000, crs="EPSG:32629")
     try:
-        e.save_as_shp(close_natus, 'data/close_natus')
+        e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")

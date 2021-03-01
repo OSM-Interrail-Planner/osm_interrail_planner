@@ -8,8 +8,6 @@ import flask_folium as ff
 from datetime import datetime, time
 from multiprocessing import Process
 
-config = e.read_config("config/00.yml")
-
 app = Flask(__name__)
 
 @app.route("/")
@@ -23,11 +21,9 @@ def select_countries():
 @app.route("/city_selection_in/<str1>/<str2>")
 def select_cities(str1, str2):
     country = [str1, str2]
-    main.extraction(config, country)
-    server.terminate()
-    #e.die("process dies")
+    main.extraction(country)
 
-    all_cities_list = main.network_preprocessing(config, country)
+    all_cities_list = main.network_preprocessing(country)
     all_cities_list.append('None')
     
     return render_template('city.html', option_list = all_cities_list)
@@ -43,20 +39,20 @@ def base(str1, str2, str3, str4, str5, str6):
 
     # this is base map
     map = folium.Map(
-        location=[38, -5],
-        zoom_start=6,
+        location=[45, 5],
+        zoom_start=4,
         tiles="Stamen Terrain"
     )
 
     # Prepare route data
-    gdf_best_route = gpd.read_file("data/best_route")
+    gdf_best_route = gpd.read_file("data/route/best_route")
     gdf_best_route = gdf_best_route.to_crs("EPSG:4326")
     # create lines from shapely (lon, lat), to folium (lat, lon)
     gdf_best_route = ff.line_geom(gdf_best_route)
 
     # Prepare close city data if not empty
     try:
-        gdf_close_cities = gpd.read_file("data/close_cities").set_crs("EPSG:32629")
+        gdf_close_cities = gpd.read_file("data/route/close_cities").set_crs("EPSG:32629")
         gdf_close_cities = gdf_close_cities.to_crs("EPSG:4326")
         # create lines from shapely (lon, lat), to folium (lat, lon)
         gdf_close_cities = ff.point_geom(gdf_close_cities)
@@ -64,7 +60,7 @@ def base(str1, str2, str3, str4, str5, str6):
 
     # Prepare close heritage data if not empty
     try: 
-        gdf_close_heris = gpd.read_file("data/close_heris").set_crs("EPSG:32629")
+        gdf_close_heris = gpd.read_file("data/route/close_heris").set_crs("EPSG:32629")
         gdf_close_heris = gdf_close_heris.to_crs("EPSG:4326")
         # create lines from shapely (lon, lat), to folium (lat, lon)
         gdf_close_heris = ff.point_geom(gdf_close_heris)
@@ -72,7 +68,7 @@ def base(str1, str2, str3, str4, str5, str6):
 
     # Prepare close heritage data if not empty
     try: 
-        gdf_close_natus = gpd.read_file("data/close_natus").set_crs("EPSG:32629")
+        gdf_close_natus = gpd.read_file("data/route/close_natus").set_crs("EPSG:32629")
         gdf_close_natus = gdf_close_natus.to_crs("EPSG:4326")
         # create lines from shapely (lon, lat), to folium (lat, lon)
         #gdf_close_natus = ff.line_geom(gdf_close_natus)
