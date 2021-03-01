@@ -9,6 +9,12 @@ The input parameters from users are:
 - Which countries to visit
 - Which cities to visit
 
+## Requirements
+Following is required to run the program.
+- Python 3
+- the packages of the environment file
+- Run python server.py in the console to start the program
+
 ## Data
 The data extracted from OSM is:
 - railways
