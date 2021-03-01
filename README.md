@@ -12,7 +12,7 @@ The input parameters from users are:
 ## Requirements
 Following is required to run the program.
 - Python 3
-- the packages of the environment file
+- the packages of the requirements.txt
 - Run python server.py in the console to start the program
 
 ## Data
