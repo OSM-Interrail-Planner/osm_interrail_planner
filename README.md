@@ -1,14 +1,31 @@
 # Interrail planer
 
 ## The basic challenge
-This application allows a user to easily plan his/her best route for an interrail trip based on his preferences of selected european cities.
-The program collects data on railway, city, stations, cultural sites and natural parks from OpenStreetMap via the Overpass API, and calculates the optimal (shortest) route between the multiple cities. The whole programm is runned in python, with a web interface for the user and the final results, including the optimal route and recommendations about further destinations on the way are visualised on a web map.
+This Python based application is designed to help users plan interrail trips based on their preferences of selected countries and citites in Europe. 
+From OpenStreetMap (OSM) through the Overpass API, the application collects data about the railway network in the cuntries selected by the user, and calculates the optimal route between the chosen multiple cities. The results are visualised in a map in your webbrowser. 
 
 ## Data
-The extracted OpenStreetMap (OSM) data should contain at least line features for the railways and point features for the train station. This will be transformed into a network to perform routing analyses on.
-Trials for accessing OSM data:
-1)	The Overpass API for extracting specific features in OSM can be reached by the python packages overpy or request  but returns quite crude data requiring more data pre-processing.
-2)	We also tried accessing the data using OSMnx, which is a Python package designed for downloading, modeling, visualising, and analysing spatial data from OSM. With a single line of Python this gives access to analysis-ready data within the package environment. However, OSMnx was too slow for retrieving the size of datasets we wanted for this project.
+The data extracted from OSM is:
+- railways
+- stations
+- cities
+- heritage/cultural sites
+- natural parks
+
+## Pre-processing
+The Overpass API returns crude froms of data that requiers aditinal data pre-processing to create a network where routing can be performed.
+The pre-processing is as follows:
+- Snap stations to rails. This geograpically aligns the stations with the railway tracks. 
+- Split segments where stations are snapped to the rail, creating two segments from the original one. This enables stations to be start and end points of the network. 
+- Connect create artificial rails between stations closer than 500 m to each other. This is to simulate changing trains at two different stations that are near to each other. 
+
+## Routing
+The routing process consist of the following steps:
+- Linkning stations to cities. 
+- Calculating and create a shortest path distance matrix between all combinations of input cities.
+- Based on the distance matrix, the "traveling salesman problem (TSP)" is solved using Dijkstra's algorithm.
+- Finally, other cities, cultural sites and natural parks that are in proximity to the route are ge
+
 
 ## Spatial database overview of possible tables: 
 1)	Railway lines
