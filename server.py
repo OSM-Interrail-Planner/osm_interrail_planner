@@ -16,20 +16,19 @@ def start():
 
 @app.route("/countries")
 def select_countries():
-    all_countries_list = ['Portugal', 'Spain', "France", "The Netherlands"]
+    all_countries_list = ['Portugal', 'Spain', "France", "Nederland", "Norway", "Sweden", "United Kingdom", "Schweiz", "Austria", "Belgium", "Luxembourg", "Italia", "Germany", "Ireland", "Liechtenstein", "Danmark", "Polska", "Czechia", "Slovensko" ,"Hungary", "Slovenia", "Croatia", "Bosnia and Herzegovina", "Serbia", "Montenegro", "Albania", "Kosovo", "North Macedonia", "Greece", "Bulgaria", "Turkey", "Romania", "Moldova", "Lithuania", "Latvia", "Estonia", "Finland"]
+    all_countries_list.sort()
     all_countries_list.append('None')
     return render_template('country.html', option_list = all_countries_list)
 
 @app.route("/city_selection_in/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def select_cities(str1, str2, str3, str4, str5, str6 ):
     list_country = [str1, str2, str3, str4, str5, str6]
-    for n in list_country:
-        if n == 'None':
-            list_country.remove(n)
+    list_country = set(list_country)
+    list_country.remove('None')
 
+    # perform OSM data extraction from Overpass API
     main.extraction(list_country)
-    server.terminate()
-    #e.die("process dies")
 
     all_cities_list = main.network_preprocessing(list_country)
     all_cities_list.append('None')
