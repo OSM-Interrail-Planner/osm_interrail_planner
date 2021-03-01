@@ -1,8 +1,8 @@
 # Interrail planer
 
 ## The basic challenge
-We want to create an application where a user can easily plan his/her route for an interrail trip based on his preferences of selected cities in Portugal.
-The system should collect railway data from an API connected to OpenStreetMap and calculate the optimal route between the chosen multiple cities. Then this should be visualised for the user on a map.
+This application allows a user to easily plan his/her best route for an interrail trip based on his preferences of selected european cities.
+The program collects data on railway, city, stations, cultural sites and natural parks from OpenStreetMap via the Overpass API, and calculates the optimal (shortest) route between the multiple cities. The whole programm is runned in python, with a web interface for the user and the final results, including the optimal route and recommendations about further destinations on the way are visualised on a web map.
 
 ## Data
 The extracted OpenStreetMap (OSM) data should contain at least line features for the railways and point features for the train station. This will be transformed into a network to perform routing analyses on.
