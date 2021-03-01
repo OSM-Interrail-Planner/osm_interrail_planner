@@ -99,7 +99,7 @@ def query_heritage(country: str):
         relation["heritage"="1"](area.searchArea);
         relation["heritage"="2"](area.searchArea);
         );
-        out center;
+        out qt center;
         """
     return heritage_query
 
@@ -124,6 +124,6 @@ def query_nature(country: str):
         relation["boundary"="protected_area"]["leisure"="nature_reserve"](area.searchArea);
         );
         (._;);
-        out geom;
+        out qt geom;
         """
     return nature_query

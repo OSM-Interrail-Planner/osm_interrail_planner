@@ -6,6 +6,7 @@ import main
 import etl as e
 import flask_folium as ff
 from datetime import datetime, time
+from multiprocessing import Process
 
 config = e.read_config("config/00.yml")
 
@@ -23,6 +24,8 @@ def select_countries():
 def select_cities(str1, str2):
     country = [str1, str2]
     main.extraction(config, country)
+    server.terminate()
+    #e.die("process dies")
 
     all_cities_list = main.network_preprocessing(config, country)
     all_cities_list.append('None')

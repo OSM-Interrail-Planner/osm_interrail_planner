@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 
 
@@ -24,6 +25,7 @@ def die(msg: str) -> None:
             msg (str): the string to be printed.
     """
     logging.getLogger("gps-logger").error(f"{msg}")
+    os._exit(0)
     sys.exit(1)
 
 
