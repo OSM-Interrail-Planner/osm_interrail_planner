@@ -46,7 +46,6 @@ def extraction(config: dict, countries: str) -> None:
             query_rail = e.query_rail(country)
             e.info(f"EXTRACTION: DOWNLOADING RAILS DATA IN {country}")
             rail_data = e.get_data(url, query_rail, 'Railways', country)
-            #e.check_download(rail_data, 'Railways', country)
             e.save_as_json_geojson(rail_data, f"{fname_rail_original}_{country}")
         else:
             e.info(f"EXTRACTION OF RAILS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -55,8 +54,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_station_original}_{country}.geojson") == False: 
             query_station = e.query_station(country)
             e.info(f"EXTRACTION: DOWNLOADING STATION DATA IN {country}")
-            station_data = e.get_data(url, query_station)
-            e.check_download(station_data, 'Stations', country)
+            station_data = e.get_data(url, query_station, 'Stations', country)
             e.save_as_json_geojson(station_data, f"{fname_station_original}_{country}")
         else:
             e.info(f"EXTRACTION OF STATIONS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -65,8 +63,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_city_original}_{country}.geojson") == False: 
             query_city = e.query_city(country)
             e.info(f"EXTRACTION: DOWNLOADING CITY DATA IN {country}")
-            city_data = e.get_data(url, query_city)
-            e.check_download(city_data, 'Cities', country)
+            city_data = e.get_data(url, query_city, 'City', country)
             e.save_as_json_geojson(city_data, f"{fname_city_original}_{country}")
         else:
             e.info(f"EXTRACTION OF CITY DATA IN {country} HAS ALREADY BEEN DONE")
@@ -75,8 +72,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_heri_original}_{country}.geojson") == False: 
             query_heri = e.query_heritage(country)
             e.info(f"EXTRACTION: DOWNLOADING HERITAGE DATA IN {country}")
-            heri_data = e.get_data(url, query_heri)
-            e.check_download(heri_data, 'Heritage', country)
+            heri_data = e.get_data(url, query_heri, 'Heritage', country)
             e.save_as_json_geojson(heri_data, f"{fname_heri_original}_{country}")
         else:
             e.info(f"EXTRACTION OF HERITAGE DATA IN {country} HAS ALREADY BEEN DONE")
@@ -85,8 +81,7 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_natu_original}_{country}.geojson") == False: 
             query_natu = e.query_nature(country)
             e.info(f"EXTRACTION: DOWNLOADING NATURE DATA IN {country}")
-            natu_data = e.get_data(url, query_natu)
-            e.check_download(natu_data, 'Nature Parks', country)
+            natu_data = e.get_data(url, query_natu, 'Natural Parks', country)
             e.save_as_json_geojson(natu_data, f"{fname_natu_original}_{country}")
         else:
             e.info(f"EXTRACTION OF NATURE DATA IN {country} HAS ALREADY BEEN DONE")
