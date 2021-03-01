@@ -3,8 +3,10 @@ import requests
 import json as js
 import osm2geojson as o2g
 import geojson as geojs
+import http
 
-def get_data(overpass_url: str, query: str):
+
+def get_data(overpass_url: str, query: str, obj_name: str, country: str):
     """
     This function sends the query for the OSM Overpass API in string format and gives back a JSON response object
     Args:
@@ -14,16 +16,23 @@ def get_data(overpass_url: str, query: str):
         A response data object in json format containing OSM data
     """
     # Perform a maximum of ten trials to download the data
-    download_attempt = 0
-    while download_attempt < 10:
+    download_attempt = 1
+
+    while download_attempt <= 10:
         try: 
             response = requests.get(overpass_url, params={'data': query})
             data = response.json()
         except:
-                download_attempt += 1
-                info(f"EXTRACTION: DOWNLOAD ATTEMPT: {download_attempt}")
+            info(f"EXTRACTION: FAILED DOWNLOAD IN ATTEMPT {download_attempt} FOR {obj_name} IN {country} ")
+            download_attempt += 1
         else:
-            break
+            if data["elements"] == []:
+                info(f"EXTRACTION: DOWNLOADED DATA FOR {obj_name} IN {country} WAS EMPTY IN DOWNLOAD ATTEMPT {download_attempt}")
+                download_attempt += 1
+            else: break
+    else: 
+        die(f"STOPPED DOWNLOAD AFTER ATTEMPT: {download_attempt-1}")
+
     return data
 
 

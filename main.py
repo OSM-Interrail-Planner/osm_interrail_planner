@@ -7,7 +7,6 @@ import geopandas as gpd
 import os
 import shutil
 
-DB_SCHEMA = "sa"
 TABLE_RAIL = "railways"
 TABLE_STAT = "stations"
 TABLE_CITY = "cities"
@@ -46,7 +45,8 @@ def extraction(config: dict, countries: str) -> None:
         if os.path.exists(f"{fname_rail_original}_{country}.geojson") == False:
             query_rail = e.query_rail(country)
             e.info(f"EXTRACTION: DOWNLOADING RAILS DATA IN {country}")
-            rail_data = e.get_data(url, query_rail)
+            rail_data = e.get_data(url, query_rail, 'Railways', country)
+            #e.check_download(rail_data, 'Railways', country)
             e.save_as_json_geojson(rail_data, f"{fname_rail_original}_{country}")
         else:
             e.info(f"EXTRACTION OF RAILS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -56,6 +56,7 @@ def extraction(config: dict, countries: str) -> None:
             query_station = e.query_station(country)
             e.info(f"EXTRACTION: DOWNLOADING STATION DATA IN {country}")
             station_data = e.get_data(url, query_station)
+            e.check_download(station_data, 'Stations', country)
             e.save_as_json_geojson(station_data, f"{fname_station_original}_{country}")
         else:
             e.info(f"EXTRACTION OF STATIONS DATA IN {country} HAS ALREADY BEEN DONE")
@@ -65,6 +66,7 @@ def extraction(config: dict, countries: str) -> None:
             query_city = e.query_city(country)
             e.info(f"EXTRACTION: DOWNLOADING CITY DATA IN {country}")
             city_data = e.get_data(url, query_city)
+            e.check_download(city_data, 'Cities', country)
             e.save_as_json_geojson(city_data, f"{fname_city_original}_{country}")
         else:
             e.info(f"EXTRACTION OF CITY DATA IN {country} HAS ALREADY BEEN DONE")
@@ -74,6 +76,7 @@ def extraction(config: dict, countries: str) -> None:
             query_heri = e.query_heritage(country)
             e.info(f"EXTRACTION: DOWNLOADING HERITAGE DATA IN {country}")
             heri_data = e.get_data(url, query_heri)
+            e.check_download(heri_data, 'Heritage', country)
             e.save_as_json_geojson(heri_data, f"{fname_heri_original}_{country}")
         else:
             e.info(f"EXTRACTION OF HERITAGE DATA IN {country} HAS ALREADY BEEN DONE")
@@ -83,6 +86,7 @@ def extraction(config: dict, countries: str) -> None:
             query_natu = e.query_nature(country)
             e.info(f"EXTRACTION: DOWNLOADING NATURE DATA IN {country}")
             natu_data = e.get_data(url, query_natu)
+            e.check_download(natu_data, 'Nature Parks', country)
             e.save_as_json_geojson(natu_data, f"{fname_natu_original}_{country}")
         else:
             e.info(f"EXTRACTION OF NATURE DATA IN {country} HAS ALREADY BEEN DONE")
@@ -210,73 +214,16 @@ def routing(list_input_city):
     close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs="EPSG:32629")
     try:
         e.save_as_shp(close_cities, 'data/close_cities')
-    except: pass
+    except: e.info("no close cities on your best route")
 
     # select heritages in proximity
     close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs="EPSG:32629")
     try:
         e.save_as_shp(close_heris, 'data/close_heris')
-    except: pass
+    except: e.info("no close heritag sites on your best route")
 
     # select nature in proximity
     close_natus = r.points_on_way(natu_gdf, best_route, [], 20000, crs="EPSG:32629")
     try:
         e.save_as_shp(close_natus, 'data/close_natus')
-    except: pass
-
-
-def parse_args() -> str:
-    """ Reads command line arguments
-
-        Returns:
-            the name of the configuration file
-    """
-    parser = argparse.ArgumentParser(description="GPS: ETL working example")
-    parser.add_argument("--config_file", required=True, help="The configuration file")
-    args = parser.parse_args()
-    return args.config_file
-
-def time_this_function(func, **kwargs) -> str:
-    """ Times function `func`
-
-        Args:
-            func (function): the function we want to time
-
-        Returns:
-            a string with the execution time
-    """
-    import time
-    t0 = time.time()
-    func(**kwargs)
-    t1 = time.time()
-    return f"'{func.__name__}' EXECUTED IN {t1-t0:.3f} SECONDS"
-
-def main(config_file: str) -> None:
-    """Main function for ETL
-
-    Args:
-        config_file (str): configuration file
-    """
-    # Read the config file
-    config = e.read_config(config_file)
-    
-    countries = e.inputs_country()
-
-    # Perform the extraction
-    extraction(config, countries)
-    #msg = time_this_function(extraction, config=config)
-    #e.info(msg)
-
-    #Perform the transformation
-    all_cities_list = network_preprocessing(config, countries)
-    #msg = time_this_function(transformation, config=config)
-    #e.info(msg)
-    
-    list_input_city = e.inputs_city(all_cities_list)
-
-    routing(list_input_city)
-
-
-if __name__ == "__main__":
-    config_file = parse_args()
-    main(config_file)
+    except: e.info("no close natural parks on your best route")
