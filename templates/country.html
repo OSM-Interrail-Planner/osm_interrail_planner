@@ -7,8 +7,11 @@
         function country() {
             const str1 = document.getElementById('country1').value;
             const str2 = document.getElementById('country2').value;
-
-            window.location.href = "/city_selection_in/" + str1 + "/" + str2;
+            const str3 = document.getElementById('country3').value;
+            const str4 = document.getElementById('country4').value;
+            const str5 = document.getElementById('country5').value;
+            const str6 = document.getElementById('country6').value;
+            window.location.href = "/city_selection_in/" + str1 + "/" + str2 + "/" + str3 + "/" + str4 + "/" + str5 + "/" + str6;
         }
     </script>
 </head>
@@ -24,18 +27,79 @@
       
     }
 </style> 
-
+   
 <body>
     <p class = box> </p>
+    <div>
     <h1 class=headline style="color:rgb(255, 255, 255);text-align:center;font-size:60px;">
         Which countries do you want to visit?
     </h1>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;"><label for="country1">Country 1: <input id="country1"></label></p>
-
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 58%;"><label for="country2">Country 2: <input id="country2"></label></p>
+    </div>
+    <input class = search type="text" placeholder="Filter options here.." id="myInput" onkeyup="filterFunction()">
+    <div id="myDropdown" class="dropdown-content">
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;">
+        <label for="country1">Country 1:
+            <select name= option_list method="GET" action="/" id="country1">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
+    </div>
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 46%;">
+        <label for="country2">Country 2:
+            <select name= option_list method="GET" action="/" id="country2">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
+    </div>
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 52%;">
+        <label for="country3">Country 3:
+            <select name= option_list method="GET" action="/" id="country3">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
+    </div>
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 58%;">
+        <label for="country4">Country 4:
+            <select name= option_list method="GET" action="/" id="country4">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
+    </div>
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 64%;">
+        <label for="country5">Country 5:
+            <select name= option_list method="GET" action="/" id="country5">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
+    </div>
+    <div>
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 70%;">
+        <label for="country6">Country 6:
+            <select name= option_list method="GET" action="/" id="country6">
+                {% for o in option_list %}
+                <option value= "{{o}}" SELECTED>{{o}}</option>
+                {% endfor %}
+            </select> 
+        </label></p>
 
     <button class=button onclick="country();">Submit</button>
-    
+    </div>
+    </div>  
 
 
     <style>
@@ -43,7 +107,7 @@
         .headline {
         margin: 0;
         position: absolute;
-        top: 33%;
+        top: 23%;
         -webkit-text-stroke: 0.15px rgb(126, 125, 173);
         left: 50%;
         -ms-transform: translate(-50%, -50%);
@@ -53,8 +117,8 @@
     .selections1
         {
         margin: 0;
-        position: fixed;
-        top: 50%;
+        position: absolute;
+        top: 40%;
         -webkit-text-stroke: 0.15px rgb(126, 125, 173);
         left: 50%;
         -ms-transform: translate(-50%, -50%);
@@ -66,10 +130,10 @@
             background-color: rgba(197, 196, 196, 0.2);
             backdrop-filter: blur(4px);
             width: 700px;
-            height: 380px;
+            height: 520px;
             padding: 10px;
-            position: fixed;
-            top: 18%;
+            position: absolute;
+            top: 10%;
             left: 26.5%;
             margin: 0;
     }
@@ -83,11 +147,48 @@
             font-size: 150%;
             font-family: Verdana, Geneva, Tahoma, sans-serif;
             margin: 0;
-            position: fixed;
-            top: 70%;
+            position: absolute;
+            top: 78%;
             left: 50%;
             -ms-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
         }
+
+        .search {
+            width: 150px;
+            height: 15px;
+            margin: 0;
+            position: absolute;
+            top: 35%;
+            -webkit-text-stroke: 0.15px rgb(126, 125, 173);
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            font-size: 100%;
+            transform: translate(-50%, -50%);
+        }
     </style>
 </body>
+
+<script>
+    /* When the user clicks on the button,
+    toggle between hiding and showing the dropdown content */
+    function myFunction() {
+      document.getElementById("myDropdown").classList.toggle("show");
+    }
+    
+    function filterFunction() {
+      var input, filter, ul, li, option, i;
+      input = document.getElementById("myInput");
+      filter = input.value.toUpperCase();
+      div = document.getElementById("myDropdown");
+      a = div.getElementsByTagName("option");
+      for (i = 0; i < a.length; i++) {
+        txtValue = a[i].textContent || a[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          a[i].style.display = "";
+        } else {
+          a[i].style.display = "none";
+        }
+      }
+    }
+</script>
