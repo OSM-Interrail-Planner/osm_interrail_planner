@@ -29,39 +29,43 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
     if 'None' in list_country:
         list_country.remove('None')
 
-    # perform OSM data extraction from Overpass API
+    # Perform OSM data extraction from Overpass API
     main.extraction(list_country)
 
-    # perform the preprocessin of the data (including the routable network)
+    # Perform the preprocessin of the data (including the routable network)
     all_cities_list = main.network_preprocessing(list_country)
     all_cities_list.sort()
     all_cities_list.append('None')
     
+    # Save the list of all cities so they can be reused when the routing fails
     all_cities_dict = {'list' : all_cities_list}
     with open('data/original/all_cities_json.txt', 'w') as all_cities_json:
         json.dump(all_cities_dict, all_cities_json)
-
 
     return render_template('city.html', option_list = all_cities_list)
 
 @app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def base(str1, str2, str3, str4, str5, str6):
     list_city = [str1, str2, str3, str4, str5, str6]
-    copy = list_city
 
     if 'None' in list_city:
         list_city.remove('None')
-    try:
-        main.routing(list_city)
-    except:
+
+    # Solve the TSP with shortest paths between all destinations
+    dict_distance_matrix = main.routing(list_city)
+
+    # Check if there are some error cities and if true recall the city selection site
+    if "error_city" in dict_distance_matrix.keys():
+        # get the city list from file
         with open('data/original/all_cities_json.txt') as all_cities_json:
             all_cities_dict = json.load(all_cities_json)
         all_cities_list = []
         for element in all_cities_dict['list']:
             all_cities_list.append(element)
-        head = """ 
-    <h1 style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(0, 0, 0);float: center;text-align:center;font-size:30px;">
-                Sorry Couldn't find a path from some cities </h1>
+        # print hint of which cities cannot be used
+        head = f""" 
+                <h1 style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(102, 0, 0);float: center;text-align:center;font-size:30px;">
+                Sorry! We couldn't find a path to/from {dict_distance_matrix["error_city"]} </h1>
                 """
         return head + render_template('city.html', option_list = all_cities_list)
 

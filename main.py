@@ -13,9 +13,9 @@ COLUMNS_STAT = {"name:en": str, "network": str}
 NAME_CITY = "cities"
 COLUMNS_CITY = {"name:en": str, "place": str, "population": str}
 NAME_HERI = "heritage"
-COLUMNS_HERI = {"name:en": str, "heritage": str}
+COLUMNS_HERI = {"name": str, "heritage": str}
 NAME_NATU = "nature"
-COLUMNS_NATU = {"name:en": str, "website": str}
+COLUMNS_NATU = {"name": str, "website": str}
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 EPSG = "EPSG:32629"
@@ -144,10 +144,14 @@ def network_preprocessing(countries: list) -> None:
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
 
     #change column name from "name:en" to "name"
-    station_all_gdf = station_all_gdf.rename(columns={"name:en": "name"})
-    city_all_gdf = city_all_gdf.rename(columns={"name:en": "name"})
-    heri_all_gdf = heri_all_gdf.rename(columns={"name:en": "name"})
-    natu_all_gdf = natu_all_gdf.rename(columns={"name:en": "name"})
+    if 'name:en' in station_all_gdf.columns:
+        station_all_gdf = station_all_gdf.rename(columns={"name:en": "name"})
+    if 'name:en' in city_all_gdf.columns:
+        city_all_gdf = city_all_gdf.rename(columns={"name:en": "name"})
+    if 'name:en' in heri_all_gdf.columns:
+        heri_all_gdf = heri_all_gdf.rename(columns={"name:en": "name"})
+    if 'name:en' in natu_all_gdf.columns:
+        natu_all_gdf = natu_all_gdf.rename(columns={"name:en": "name"})
 
     e.info("PREPROCSSING: MERGED ALL COUNTRIES")
 
@@ -199,8 +203,12 @@ def routing(list_input_city: list):
     gdf_input_stations = r.city_to_station(city_gdf, station_gdf, list_input_city)
 
     e.info("ROUTING: SOLVING TSP STARTED")
-    #solving the travelling sales man problem ("TSP")
+    # solving the travelling sales man problem ("TSP")
     dict_distance_matrix = r.create_distance_matrix(gdf_input_stations, rail_gdf, mirror_matrix=True)
+    # if no path could be found return the error city 
+    if "error_city" in dict_distance_matrix.keys():
+        return dict_distance_matrix
+
     plan_output = r.tsp_calculation(dict_distance_matrix)
 
     # create GeoDataFrame ot of the plan_output
@@ -226,3 +234,5 @@ def routing(list_input_city: list):
     try:
         e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")
+
+    return dict_distance_matrix
