@@ -79,8 +79,6 @@ def base(str1, str2, str3, str4, str5, str6):
     try: 
         gdf_close_natus = gpd.read_file("data/route/close_natus").set_crs("EPSG:32629")
         gdf_close_natus = gdf_close_natus.to_crs("EPSG:4326")
-        # create lines from shapely (lon, lat), to folium (lat, lon)
-        #gdf_close_natus = ff.line_geom(gdf_close_natus)
     except: pass
 
     # add the nature parks
