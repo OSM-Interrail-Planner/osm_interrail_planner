@@ -109,4 +109,5 @@ def base(str1, str2, str3, str4, str5, str6):
     return head + map._repr_html_()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    Timer(1, webbrowser.open('http://127.0.0.1:5000/')).start()
+    app.run(debug=True, use_reloader=False)
