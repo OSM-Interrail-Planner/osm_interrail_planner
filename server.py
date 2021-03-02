@@ -6,6 +6,7 @@ import main
 import etl as e
 import flask_folium as ff
 from datetime import datetime, time
+import json
 
 app = Flask(__name__)
 
@@ -24,7 +25,8 @@ def select_countries():
 def select_cities(str1, str2, str3, str4, str5, str6 ):
     list_country = [str1, str2, str3, str4, str5, str6]
     list_country = set(list_country)
-    list_country.remove('None')
+    if 'None' in list_country:
+        list_country.remove('None')
 
     # perform OSM data extraction from Overpass API
     main.extraction(list_country)
@@ -33,17 +35,32 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
     all_cities_list.sort()
     all_cities_list.append('None')
     
+    all_cities_dict = {'list' : all_cities_list}
+    with open('data/original/all_cities_json.txt', 'w') as all_cities_json:
+        json.dump(all_cities_dict, all_cities_json)
+
+
     return render_template('city.html', option_list = all_cities_list)
 
 @app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def base(str1, str2, str3, str4, str5, str6):
     list_city = [str1, str2, str3, str4, str5, str6]
     copy = list_city
-    for n in copy:
-        if n == 'None':
-            list_city.remove('None')
-
-    main.routing(list_city)
+    if 'None' in list_city:
+        list_city.remove('None')
+    try:
+        main.routing(list_city)
+    except:
+        with open('data/original/all_cities_json.txt') as all_cities_json:
+            all_cities_dict = json.load(all_cities_json)
+        all_cities_list = []
+        for element in all_cities_dict['list']:
+            all_cities_list.append(element)
+        head = """ 
+    <h1 style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(0, 0, 0);float: center;text-align:center;font-size:30px;">
+                Sorry Couldn't find a path from some cities </h1>
+                """
+        return head + render_template('city.html', option_list = all_cities_list)
 
     # this is base map
     map = folium.Map(

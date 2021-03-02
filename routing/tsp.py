@@ -189,10 +189,10 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                             shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
                         except:
                             index_dest_trial += 1
-                        else: # if try worked
-                            e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
+                        #else: # if try worked
+                            #e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
                     # if the while loop hasn't stop by the die unction yet, the origin station is the problem
-                    e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
+                    #e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
 
             # If mirror_matrix = False just calculate everything
             else:
@@ -211,10 +211,10 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                             shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
                         except:
                             index_dest_trial += 1
-                        else: # if try worked
-                            e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
+                        #else: # if try worked
+                            #e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
                     # if the while loop hasn't stop by the die unction yet, the origin station is the problem
-                    e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
+                    #e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
 
 
         # After all distances from the origin station have been calculated check if it can be reached and append it to the matrix
