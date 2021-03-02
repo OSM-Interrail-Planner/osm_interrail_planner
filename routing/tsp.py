@@ -95,7 +95,7 @@ def shortest_path(station_gdf : gpd.GeoDataFrame, start_station_name: str, end_s
     shortest_path = nx.shortest_path(rail_network, start_node, end_node, weight=None, method='dijkstra')
     shortest_path_line_string = sg.LineString(list(shortest_path))
     
-    return(shortest_path_line_string)
+    return shortest_path_line_string
 
 def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_gdf, mirror_matrix: bool) -> dict:
     """This function creates a distance matrix including all possible distances between input station list.

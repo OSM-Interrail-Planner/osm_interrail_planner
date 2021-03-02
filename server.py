@@ -30,6 +30,7 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
     main.extraction(list_country)
 
     all_cities_list = main.network_preprocessing(list_country)
+    all_cities_list.sort()
     all_cities_list.append('None')
     
     return render_template('city.html', option_list = all_cities_list)
@@ -37,9 +38,10 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
 @app.route("/route_between/<str1>/<str2>/<str3>/<str4>/<str5>/<str6>")
 def base(str1, str2, str3, str4, str5, str6):
     list_city = [str1, str2, str3, str4, str5, str6]
-    for n in list_city:
+    copy = list_city
+    for n in copy:
         if n == 'None':
-            list_city.remove(n)
+            list_city.remove('None')
 
     main.routing(list_city)
 

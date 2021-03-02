@@ -1,7 +1,6 @@
 import shapely.geometry as sg
 from shapely.ops import split
 from shapely.geometry import Point, MultiPoint, LineString, MultiLineString
-import pprint as pp
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -107,7 +106,7 @@ def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoD
 
     line_gdf = line_gdf.append(tmp, ignore_index=True)
     
-    return(line_gdf)
+    return line_gdf 
 
 
 def split_line_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int) -> gpd.GeoDataFrame:
@@ -159,4 +158,4 @@ def split_line_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataF
     # Merge new split lines with original lines
     line_gdf = line_gdf.append(split_lines_gdf, ignore_index=True)
 
-    return(line_gdf)
+    return line_gdf

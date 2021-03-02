@@ -1,8 +1,7 @@
-import geojson
 import json
 import shapely.geometry as sg
 import geopandas as gpd
-import osm2geojson
+import osm2geojson as o2g
 
 
 def open_json(filename: str):
@@ -22,7 +21,7 @@ def open_json(filename: str):
 # Besides the geometry columns we want to extract attributes of the OSM tags and store them in columns
 # Therefore this function creates dictionaries for each tag from the raw OSM JSON and is afterwards 
 # implemented in the big conversion function
-def append_tags(element, new_element, desired_tags: dict):
+def append_tags(element: dict, new_element: dict, desired_tags: dict):
     """
     This function takes the desired tags and creates a dictionary for every tag. 
     This dictionary is appended to an element of the conversion from Overpass json to gpd.geodataframe.
@@ -50,7 +49,7 @@ def append_tags(element, new_element, desired_tags: dict):
 
 
 # Implement the conversion function from the raw OSM JSON file to a geopandas geodataframe
-def overpass_json_to_gpd_gdf(overpass_json, desired_tags: dict, geometry_list: list) -> gpd.GeoDataFrame:
+def overpass_json_to_gpd_gdf(overpass_json: dict, desired_tags: dict, geometry_list: list) -> gpd.GeoDataFrame:
     """
     This function takes a overpass json file containing nodes or ways and transforms it 
     into an geopandas geodataframe
@@ -210,7 +209,7 @@ def overpass_json_to_gpd_gdf(overpass_json, desired_tags: dict, geometry_list: l
     return gdf
 
 
-def convert_to_gdf(json_file: json, desired_tags: dict, geometry_list: list) -> gpd.GeoDataFrame:
+def convert_to_gdf(json_file: dict, desired_tags: dict, geometry_list: list) -> gpd.GeoDataFrame:
     """This function converts an Overpass json to gpd. GeoDataFrame with the desired attributes
 
     Args:
@@ -221,7 +220,7 @@ def convert_to_gdf(json_file: json, desired_tags: dict, geometry_list: list) -> 
     Returns:
         gpd.GeoDataFrame
     """
-    shape = osm2geojson.json2shapes(json_file)
+    shape = o2g.json2shapes(json_file)
     shape_gdf = gpd.GeoDataFrame(shape, geometry = "shape", crs="EPSG:4326")
 
     # create function for extracting the desired OSM tags into GeoDataFrame columns
@@ -304,15 +303,16 @@ def save_as_shp(geo_df: gpd.GeoDataFrame, fname: str) -> None:
     geo_df.to_file(driver = 'ESRI Shapefile', filename= f"{fname}")
 
 
-def all_cities_list(city_gdf: gpd.GeoDataFrame):
+def all_cities_list(city_gdf: gpd.GeoDataFrame) -> list:
     """
-    function to extract a citys from cities GeoDataFrame
+    function to extract a list of citys from cities GeoDataFrame
 
     Args:
         city_gdf (gpd.GeoDataFrame): The merged gdf of all cities of the countries
+    
+    Returns:
+        An alphabetically sorted list of all city names
     """
-    #filtered_cites_gdf = city_gdf[['name','place']][city_gdf['place'] == 'city']
-    #all_cities_list = list(filtered_cites_gdf['name'])
     city_gdf = city_gdf.replace(to_replace= "/", value= ";", regex=True)
     all_cities_list = list(city_gdf['name'])
-    return(all_cities_list)
+    return all_cities_list
