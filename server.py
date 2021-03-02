@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request, redirect
 import geopandas as gpd
 import folium
-import random
 import main
 import etl as e
 import flask_folium as ff
-from datetime import datetime, time
 
 app = Flask(__name__)
 
@@ -24,11 +22,13 @@ def select_countries():
 def select_cities(str1, str2, str3, str4, str5, str6 ):
     list_country = [str1, str2, str3, str4, str5, str6]
     list_country = set(list_country)
-    list_country.remove('None')
+    if 'None' in list_country:
+        list_country.remove('None')
 
     # perform OSM data extraction from Overpass API
     main.extraction(list_country)
 
+    # perform the preprocessin of the data (including the routable network)
     all_cities_list = main.network_preprocessing(list_country)
     all_cities_list.sort()
     all_cities_list.append('None')
@@ -43,6 +43,7 @@ def base(str1, str2, str3, str4, str5, str6):
         if n == 'None':
             list_city.remove('None')
 
+    # perform the routing and solve the TS problem
     main.routing(list_city)
 
     # this is base map

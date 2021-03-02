@@ -20,49 +20,45 @@ def snap_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, 
     # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
     station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
-    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    # Apply an operation to this station_bbox to get a list of the lines (sptially indexed) that overlap
     hits = station_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
-
-    # Create a better datastructure to relate the points to their lines in tolerance distance
     tmp = pd.DataFrame({
-        # index of points table
-        "pt_idx": np.repeat(hits.index, hits.apply(len)),    
-        # ordinal position of line - access via iloc later
+        "pt_idx": np.repeat(hits.index, hits.apply(len)), 
         "line_i": np.concatenate(hits.values)
     })
 
     # Join back to the lines on line_i 
-    tmp = tmp.join(line_gdf.reset_index(drop=True), on="line_i") # reset_index() to give us the ordinal position of each line
-    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") # join back to the original points to get their geometry and rename the point geometry as "point"   
-    tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=point_gdf.crs) # convert back to a GeoDataFrame, so we can do spatial ops
+    tmp = tmp.join(line_gdf.reset_index(drop=True), on="line_i") 
+    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") 
+    tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=point_gdf.crs) 
 
     # Calculate the distance between each line and its associated point feature
     tmp["snap_dist"] = tmp.geometry.distance(gpd.GeoSeries(tmp.point))
 
     # Discard and sort lines by distance to each point
-    tmp = tmp.loc[tmp.snap_dist <= offset] # discard any lines that are greater than tolerance from points
-    tmp = tmp.sort_values(by=["snap_dist"]) # sort on ascending snap distance, so that closest goes to top
+    tmp = tmp.loc[tmp.snap_dist <= offset] 
+    tmp = tmp.sort_values(by=["snap_dist"]) 
 
     # Find closest line to a point
-    closest = tmp.groupby("pt_idx").first() # group by the index of the points and take the first, which is the closest line 
-    closest = gpd.GeoDataFrame(closest, geometry="geometry") # construct a GeoDataFrame of the closest lines
+    closest = tmp.groupby("pt_idx").first() 
+    closest = gpd.GeoDataFrame(closest, geometry="geometry") 
 
-    # Real Snapping: 
-    pos = closest.geometry.project(gpd.GeoSeries(closest.point)) # position of nearest point from start of the line
-    new_pts = closest.geometry.interpolate(pos) # get new point location geometry
+    # Real Snapping
+    pos = closest.geometry.project(gpd.GeoSeries(closest.point)) 
+    new_pts = closest.geometry.interpolate(pos) 
 
     # Join back the new geometry to our original station  
-    line_columns = [] # identify the columns we want to copy from the closest line to the point, such as a line ID.   
-    snapped = gpd.GeoDataFrame(closest[line_columns],geometry=new_pts) # create a new GeoDataFrame from the columns from the closest line and new point geometries (which will be called "geometries")
-    updated_points = point_gdf.drop(columns=["geometry"]).join(snapped) # join back to the original points:
-    updated_points = updated_points.dropna(subset=["geometry"]) # drop any that didn't snap
+    line_columns = []    
+    snapped = gpd.GeoDataFrame(closest[line_columns],geometry=new_pts) 
+    updated_points = point_gdf.drop(columns=["geometry"]).join(snapped) 
+    updated_points = updated_points.dropna(subset=["geometry"]) 
 
     return updated_points 
     
 
 def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int, ) -> gpd.GeoDataFrame:
     """
-    This function connents the stations points within the offset distance by a line and appends it to the line_gdf
+    This function connects the stations points within the offset distance by a line and appends it to the line_gdf
     
     Args:
         point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
@@ -73,17 +69,13 @@ def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoD
         gpd.GeoDataFrame: Line GeoDataFrame with updated lines as connections between the points 
     """
     
-    # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
+    # Create bounding box for the points in offset distance in meters
     station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
-    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    # Apply an operation to this station_bbox to get a list of the points (sptially indexed) that overlap
     hits = station_bbox.apply(lambda row: list(point_gdf.sindex.intersection(row)), axis=1)
-
-    # Create a better datastructure to relate the points to their lines in tolerance distance
     tmp = pd.DataFrame({
-        # index of points table
-        "pt_idx": np.repeat(hits.index, hits.apply(len)),    
-        # ordinal position of points - access via iloc later
+        "pt_idx": np.repeat(hits.index, hits.apply(len)),
         "pt_i": np.concatenate(hits.values)
     })
 
@@ -91,8 +83,8 @@ def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoD
     tmp = tmp[tmp["pt_idx"] != tmp["pt_i"]]
 
     # Join bakc to get the geometries
-    tmp = tmp.join(point_gdf.reset_index(drop=True), on="pt_i") # reset_index() to give us the ordinal position of each line
-    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") # join back to the original points to get their geometry and rename the point geometry as "point"
+    tmp = tmp.join(point_gdf.reset_index(drop=True), on="pt_i") 
+    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx")
     
     # Create Linestrings connecting the stations
     tmp["line"] = tmp.apply(lambda row: LineString([row["geometry"], row["point"]]), axis=1)
@@ -111,7 +103,7 @@ def connect_points_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoD
 
 def split_line_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, offset: int) -> gpd.GeoDataFrame:
     """
-    This function connents the stations points within the offset distance by a line and appends it to the line_gdf
+    This function splits line features from line_gdf when they contain intermediate points from points_gdf within the offset distance
     
     Args:
         point_gdf (gpd.GeoDataFrame): geopandas GeoDataFrame with point geometry
@@ -122,23 +114,21 @@ def split_line_spatial_index(point_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataF
         gpd.GeoDataFrame: Line GeoDataFrame with updated lines split by the points 
     """
 
-    # Create bounding box for the points in offset distance in meters (that's the reason for the reprojection)
+    # Create bounding box for the points in offset distance in meters
     station_bbox = point_gdf.bounds + [-offset, -offset, offset, offset]
 
-    # Apply an operation to this station_bbox to get a list of the lines that overlap
+    # Apply an operation to this station_bbox to get a list of the lines (sptially indexed) that overlap
     hits = station_bbox.apply(lambda row: list(line_gdf.sindex.intersection(row)), axis=1)
 
     # Create a better datastructure to relate the points to their lines in tolerance distance
     tmp = pd.DataFrame({
-        # index of points table
-        "pt_idx": np.repeat(hits.index, hits.apply(len)),    
-        # ordinal position of lines - access via iloc later
+        "pt_idx": np.repeat(hits.index, hits.apply(len)),   
         "line_i": np.concatenate(hits.values)
     })
 
     # Join bakc to get the geometries
-    tmp = tmp.join(line_gdf.reset_index(drop=True), on="line_i") # reset_index() to give us the ordinal position of each line
-    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") # join back to the original points to get their geometry and rename the point geometry as "point"
+    tmp = tmp.join(line_gdf.reset_index(drop=True), on="line_i") 
+    tmp = tmp.join(point_gdf.geometry.rename("point"), on="pt_idx") 
     
     # Split the lines by the already snapped stations
     tmp["split_lines"] = tmp.apply(lambda row: split(row["geometry"], row["point"]), axis=1)

@@ -1,11 +1,9 @@
 import etl as e
 import routing as r
-import argparse
 import time
 import sys
 import geopandas as gpd
 import os
-import shutil
 
 URL = "http://overpass-api.de/api/interpreter"
 NAME_RAIL = "railways"
@@ -36,12 +34,11 @@ fname_city_processed = e.create_fname(NAME_CITY, PROCESSED_DIR)
 fname_heri_processed = e.create_fname(NAME_HERI, PROCESSED_DIR)
 fname_natu_processed = e.create_fname(NAME_NATU, PROCESSED_DIR)
 
-def extraction(countries: str) -> None:
-    """ Runs extraction
+def extraction(countries: list) -> None:
+    """ Runs extraction of data from OpenStreetMap via Overpass API
 
         Args:
-            config (str): configuration dictionary
-            country (str): The country where you want to travel in Europe in international spelling
+            country (list): The countries where you want to travel in Europe in international spelling
     """
     
     e.info("EXTRACTION: START DATA EXTRACTION")
@@ -97,21 +94,13 @@ def extraction(countries: str) -> None:
     e.info("EXTRACTION: COMPLETED")
 
 
-def network_preprocessing(countries) -> None:
-    """Runs transformation
+def network_preprocessing(countries: list) -> None:
+    """This function is based on the packages etl (trans.py) and routing (preprocessing.py). It transforms json data
+    and prepares a routable network. The data is stored as shapefiles in data/processed
 
     Args:
-        countries: Description
+        countries (list): List of destination countries 
     """
-
-    #if os.path.exists(f"{fname_rail_processed}") and os.path.exists(f"{fname_city_processed}") and os.path.exists(f"{fname_station_processed}"):
-        
-    #    city_all_gdf = gpd.read_file(fname_city_processed)
-    #    all_cities_list = e.all_cities_list(city_all_gdf)
-
-    #    e.info("PREPROCESSING HAS ALREADY BEEN DONE")
-
-    #    return all_cities_list
 
     e.info("PREPROCESSING: STARTED")
 
@@ -183,7 +172,13 @@ def network_preprocessing(countries) -> None:
     return all_cities_list
 
 
-def routing(list_input_city):
+def routing(list_input_city: list):
+    """This function is based on the package routing. It finds the best route between the input cities and corresponding
+    cultural sites, nature parks and close cities on the way. Everything is saved as shapefiles in data/route
+
+    Args:
+        list_input_city (list): List of input cities
+    """
 
     # First, open shapefiles as GeoDataFrames
     city_gdf = gpd.read_file(fname_city_processed)
@@ -207,19 +202,19 @@ def routing(list_input_city):
     e.save_as_shp(best_route, 'data/route/best_route')
 
     # select cities in proximity
-    close_cities = r.points_on_way(city_gdf, best_route, list_input_city, 5000, crs=EPSG)
+    close_cities = r.features_on_way(city_gdf, best_route, list_input_city, 5000, crs=EPSG)
     try:
         e.save_as_shp(close_cities, 'data/route/close_cities')
     except: e.info("no close cities on your best route")
 
     # select heritages in proximity
-    close_heris = r.points_on_way(heri_gdf, best_route, [], 5000, crs=EPSG)
+    close_heris = r.features_on_way(heri_gdf, best_route, [], 5000, crs=EPSG)
     try:
         e.save_as_shp(close_heris, 'data/route/close_heris')
-    except: e.info("no close heritag sites on your best route")
+    except: e.info("no close heritage sites on your best route")
 
     # select nature in proximity
-    close_natus = r.points_on_way(natu_gdf, best_route, [], 20000, crs=EPSG)
+    close_natus = r.features_on_way(natu_gdf, best_route, [], 20000, crs=EPSG)
     try:
         e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")

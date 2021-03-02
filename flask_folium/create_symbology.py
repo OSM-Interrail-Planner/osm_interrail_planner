@@ -9,9 +9,9 @@ def add_route_to_map(gdf_best_route: gpd.GeoDataFrame, basemap):
 
     Args:
         gdf_best_route (gpd.GeoDataFrame)
-        basemap ([type])
+        basemap (folium.map)
     """
-    #create a list of random colors
+    #create a list of colors
     colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#364e4a', 'cadetblues']
     
     # make a feature group for every route
@@ -36,7 +36,7 @@ def add_close_cities_to_map(gdf_close_cities: gpd.GeoDataFrame, basemap):
 
     Args:
         gdf_close_cities (gpd.GeoDataFrame)
-        basemap ([type])
+        basemap (folium.map)
     """ 
     # add the corresponding close cities
     try:
@@ -62,9 +62,9 @@ def add_close_heris_to_map(gdf_close_heris: gpd.GeoDataFrame, basemap):
 
     Args:
         gdf_close_heris (gpd.GeoDataFrame)
-        basemap ([type])
+        basemap (folium.map)
     """
-    # add the corresponding close heri marker
+    # add close heris as cluster markers
     try:
         fg_heris = folium.FeatureGroup('Close Heritages')
         marker_cluster = MarkerCluster()
@@ -86,10 +86,12 @@ def add_starters_to_map(gdf_best_route: gpd.GeoDataFrame, basemap):
 
     Args:
         gdf_best_route (gpd.GeoDataFrame)
-        basemap ([type])
+        basemap (folium.map)
     """
-    #create a list of random colors
+    #create a list of colors
     colors = ['orange', 'darkred', 'darkblue', 'purple', 'darkgreen', '#364e4a', 'cadetblue']
+
+    # make one feature group for the markers
     fg_marker = folium.FeatureGroup("Destination Cities")
     for i, row in gdf_best_route.iterrows():
         fg_marker.add_child(folium.Marker(
@@ -106,13 +108,9 @@ def add_nature_to_map(gdf_close_natus: gpd.GeoDataFrame, basemap):
 
     Args:
         gdf_close_natus (gpd.GeoDataFrame)
-        basemap ([type])
+        basemap (folium.map)
     """
-    
-    # make a feature group for every route
-    # merge them to a feature group
-    # add the nature parks
-     # add the nature parks
+    # make a feature group for natural parks
     fg_nature = folium.FeatureGroup("Natural Parks")
     folium.GeoJson(
         gdf_close_natus,
