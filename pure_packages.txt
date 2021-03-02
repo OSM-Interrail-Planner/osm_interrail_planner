@@ -1,0 +1,10 @@
+geopandas (conda, pip)
+requests (conda, pip)
+json ?
+geojson (conda, pip)
+osm2geojson (pip)
+ortools (pip)
+networkx (conda, pip)
+momepy (conda, pip)
+folium (conda, pip)
+flask (conda, pip)
