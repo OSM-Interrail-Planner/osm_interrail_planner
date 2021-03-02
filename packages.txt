@@ -1,0 +1,52 @@
+etl:
+  1. ds.py
+  - requests
+  - json
+  - osm2geojson
+  - geojson
+  2. logs.py
+  - sys
+  - os
+  - logging
+  3. trans.py
+  - json
+  - shapely
+  - osm2geojson
+  - geopandas
+  
+routing:
+  1. preprocessing.py
+  - shapely
+  - geopandas
+  - pandas
+  - numpy
+  2. tsp.py
+  - ortools
+  - shapely
+  - geopandas
+  - pandas
+  - numpy
+  - networkx
+  - momepy
+  3. post_routing.py
+  - geopandas
+  - pandas
+  - numpy
+
+flask_folium:
+  1. create_symbology.py:
+  - folium
+  - geopandas
+  2. folium_geometry.py:
+  - geopandas
+  
+ server.py:
+  - flask
+  - geopandas
+  - folium
+  
+  main.py:
+  - time
+  - sys
+  - geopandas
+  - os
