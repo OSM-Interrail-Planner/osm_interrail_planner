@@ -6,7 +6,6 @@ import main
 import etl as e
 import flask_folium as ff
 from datetime import datetime, time
-from multiprocessing import Process
 
 app = Flask(__name__)
 
