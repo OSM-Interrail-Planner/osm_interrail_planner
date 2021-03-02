@@ -9,13 +9,13 @@ URL = "http://overpass-api.de/api/interpreter"
 NAME_RAIL = "railways"
 COLUMNS_RAIL = {"name": str}
 NAME_STAT = "stations"
-COLUMNS_STAT = {"name": str, "network": str}
+COLUMNS_STAT = {"name:en": str, "network": str}
 NAME_CITY = "cities"
-COLUMNS_CITY = {"name": str, "place": str, "population": str}
+COLUMNS_CITY = {"name:en": str, "place": str, "population": str}
 NAME_HERI = "heritage"
-COLUMNS_HERI = {"name": str, "heritage": str}
+COLUMNS_HERI = {"name:en": str, "heritage": str}
 NAME_NATU = "nature"
-COLUMNS_NATU = {"name": str, "website": str}
+COLUMNS_NATU = {"name:en": str, "website": str}
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 EPSG = "EPSG:32629"
@@ -143,6 +143,12 @@ def network_preprocessing(countries: list) -> None:
         natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
 
+    #change column name from "name:en" to "name"
+    station_all_gdf = station_all_gdf.rename(columns={"name:en": "name"})
+    city_all_gdf = city_all_gdf.rename(columns={"name:en": "name"})
+    heri_all_gdf = heri_all_gdf.rename(columns={"name:en": "name"})
+    natu_all_gdf = natu_all_gdf.rename(columns={"name:en": "name"})
+
     e.info("PREPROCSSING: MERGED ALL COUNTRIES")
 
     # Preprocess data to make it routable
@@ -167,7 +173,9 @@ def network_preprocessing(countries: list) -> None:
 
     e.info("PREPROCESSING: COMPLETED")
 
+    city_all_gdf = city_all_gdf[city_all_gdf.name  != "nan"]
     all_cities_list = e.all_cities_list(city_all_gdf)
+    
 
     return all_cities_list
 
