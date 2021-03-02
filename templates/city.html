@@ -21,6 +21,17 @@
 <style>
     body,h1 {font-family: Verdana, Geneva, Tahoma, sans-serif}
     body {
+
+        background-color: rgba(197, 196, 196, 0.2);
+            backdrop-filter: blur(4px);
+            width: 840px;
+            height: 420px;
+            padding: 10px;
+            position: absolute;
+            top: 16%;
+            left: 23.5%;
+            margin: 0;
+
       background-image: url('https://www.maistecnologia.com/wp-content/uploads/2014/03/lisboa.jpg');
       background-size: 1920px 1050px;
         
@@ -39,7 +50,7 @@
     <input class = search type="text" placeholder="Filter options here.." id="myInput" onkeyup="filterFunction()">
     <div id="myDropdown" class="dropdown-content">
     
-    <p  class=selections1 style= "left: 37.9%;">
+    <p  class=selections1 style= "left: 0%;">
         <label for="city1"><b> Start City:</b>  
                 <select name= option_list method="GET" action="/" id="city1">
                 {% for o in option_list %}
@@ -49,7 +60,7 @@
         </label>
     </p>
     
-    <p class=selections1 style="left: 66%;">
+    <p class=selections1 style="left: 50%;">
         <label for="city2"> <b>City 2:</b>
                 <select name= option_list method="GET" action="/" id="city2">
                 {% for o in option_list %}
@@ -58,7 +69,7 @@
                 </select>
         </label>
     </p>
-    <p class=selections1 style="top: 55%;">
+    <p class=selections1 style="top: 60%;">
         <label for="city3"><b>City 3:</b>
                 <select name= option_list method="GET" action="/" id="city3">
                 {% for o in option_list %}
@@ -67,7 +78,7 @@
                 </select>
         </label>
     </p>
-    <p class=selections1 style="top: 55%;left: 66%;">
+    <p class=selections1 style="top: 60%;left: 50%;">
         <label for="city4"><b>City 4:</b>
                 <select name= option_list method="GET" action="/" id="city4">
                 {% for o in option_list %}
@@ -76,7 +87,7 @@
                 </select>
         </label>
     </p>
-    <p class=selections1 style="top: 60%;">
+    <p class=selections1 style="top: 65%;">
         <label for="city5"><b>City 5:</b>
                 <select name= option_list method="GET" action="/" id="city5">
                 {% for o in option_list %}
@@ -85,7 +96,7 @@
                 </select>
         </label>
     </p>
-    <p class=selections1 style="top: 60%;left: 66%;">
+    <p class=selections1 style="top: 65%;left: 50%;">
         <label for="city6"><b>City 6:</b>
                 <select name= option_list method="GET" action="/" id="city6">
                 {% for o in option_list %}
@@ -125,14 +136,13 @@
 
 <style>
 
-    .headline {
-    margin: 0;
-    position: absolute;
-    top: 29%;
-    -webkit-text-stroke: 0.15px rgb(126, 125, 173);
-    left: 52%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+.headline {
+        margin: 0;
+        position: relative;
+        top: 18%;
+        -webkit-text-stroke: 0.15px rgb(126, 125, 173);
+        left: 0%;
+   
 }
 
 .search
@@ -141,24 +151,22 @@
     height: 15px;
     margin: 0;
     position: absolute;
-    top: 45%;
+    top: 47%;
     -webkit-text-stroke: 0.15px rgb(126, 125, 173);
-    left: 52%;
-    -ms-transform: translate(-50%, -50%);
+    left: 40%;
     font-size: 100%;
-    transform: translate(-50%, -50%);
+    
 }
 
     .selections1
     {
     margin: 0;
     position: absolute;
-    top: 50%;
+    top: 55%;
     -webkit-text-stroke: 0.5px rgba(128, 127, 160, 0.534);
-    left: 39%;
-    -ms-transform: translate(-50%, -50%);
+    left: 4%;
     font-size: 100%;
-    transform: translate(-50%, -50%);
+   
 }
 
     .button {
@@ -171,22 +179,11 @@
         font-family: Verdana, Geneva, Tahoma, sans-serif;
         margin: 0;
         position: absolute;
-        top: 70%;
-        left: 52%;
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
+        top: 75%;
+        left: 36%;
+        
     }
-    .box {
-            background-color: rgba(197, 196, 196, 0.2);
-            backdrop-filter: blur(4px);
-            width: 840px;
-            height: 420px;
-            padding: 10px;
-            position: fixed;
-            top: 16%;
-            left: 23.5%;
-            margin: 0;
-    }
+    
 </style>
 
 </body>

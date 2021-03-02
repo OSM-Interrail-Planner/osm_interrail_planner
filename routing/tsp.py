@@ -1,4 +1,3 @@
-import pprint as pp
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import shapely.geometry as sg
@@ -13,7 +12,7 @@ import etl as e
 
 
 def city_to_station(gdf_city, gdf_station, list_input_city):
-    """Relates the input citiy to the closest station and if no station name replace by the city name
+    """Relates the input city to the closest station and if no station name it replaces the empty string by the city name
 
     Args:
         gdf_city (gpd.GeoDataFrame)
@@ -39,9 +38,9 @@ def city_to_station(gdf_city, gdf_station, list_input_city):
     for i, row in gdf_city.iterrows():
         city_point = row['geometry']
         city_name = row['name']
-
+        # get the nearest station to the city center
         near_point = nearest_points(city_point, multi_station) # output = [city point, station point]
-        
+        # create a one line gdf to append to output_gdf
         near_station = gdf_station[gdf_station['geometry'] == near_point[1]]
         near_station = gpd.GeoDataFrame(near_station)
         near_station['city'] = ''
@@ -59,7 +58,6 @@ def city_to_station(gdf_city, gdf_station, list_input_city):
         if row['name'] == 'nan':
             output_gdf.loc[i, 'name'] = row['city']
 
-    print(output_gdf)
     return output_gdf
 
 
@@ -72,58 +70,64 @@ def shortest_path(station_gdf : gpd.GeoDataFrame, start_station_name: str, end_s
         start_station_name (str): Then name of the start station
         end_station_name (str): The name of the end station
         rail_segments_gdf (GeoDataFrame): rails segments GeoDataFrame
+
+    Returns:
+        shapely.LineString: Shortest path in LineString geometry
     """
-    #Select the stations raws
+    # Select the stations from stations_gdf by name
     start_station = station_gdf[["name","geometry"]][station_gdf['name'] == start_station_name].head(1)
     end_station = station_gdf[["name","geometry"]][station_gdf['name'] == end_station_name].head(1)
     
-    #creat geodataframe from the stations selected
+    # Create geodataframe from the stations selected
     start_end_dataframe = start_station.append(end_station)
     
-    #transefer it into grapgh
+    # Transfer it into a graph
     stations_nodes = momepy.gdf_to_nx(start_end_dataframe, approach='primal')
-    print("datatype stations", type(stations_nodes))
     
-    #create network from the new geo_data_frame
+    # Create network from the rails GeoDataFrame
     rail_network = momepy.gdf_to_nx(rail_segments_gdf, approach='primal')
-    print("datatype rail_network", type(rail_network ))
 
-    #select start and end stations nodes
+    # Select start and end stations nodes
     start_node = list(stations_nodes.nodes)[0]
     end_node = list(stations_nodes.nodes)[1]
 
+    # Perform shortest path calculation with Dijkstra Algorithm
     shortest_path = nx.shortest_path(rail_network, start_node, end_node, weight=None, method='dijkstra')
     shortest_path_line_string = sg.LineString(list(shortest_path))
     
     return shortest_path_line_string
 
 def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_gdf, mirror_matrix: bool) -> dict:
-    """This function creates a distance matrix including all possible distances between input station list.
-    Distances are calculated as shortest path along a network
+    """This function creates a matrices for shortest paths and distances including all possible combinations between 
+        input station list.
 
     Args:
-        stations (list):The list of stations contains each station which should be included in the distance matrix
-                        This is a list of strings.
+        gdf_input_stations (gpd.GeoDataFrame): The GeoDataFrame of stations contains each station which should be included 
+                        in the matrices
+        rail_segments_gdf (gpd.GeoDataFrame): The preprocessed GeoDataFrame containing the rail network
         mirror_matrix (bool): If True it takes distances which are already calculated for a pair of stations
                         assumption: distance(1->2) = distance(2->1)
 
     Returns:
-        dict: The dictionary contains two elements.
+        dict: 
                 1. "stations_index": [list of stations]
-                2. "distance_matrix": [[d11=0, d12, d13, d14],
+                2. "stop": [list of stop names]
+                3. "num_vehicle": 1 (related to the TSP problem)
+                4. "depot": 0 (start and end point in TSP problem)
+                5. "distance_matrix" (containing float distances in km): 
+                                      [[d11=0, d12, d13, d14],
                                        [d21, d22=0, d23, d24],
                                        [d31, d32, d33=0, d34],
                                        [d41, d42, d43, d44=0]]
-                3. "path_matrix" (containing LineString objects as paths): 
-                                      [[path11=0, path12, path13, path14],
-                                       [path21, path22=0, path23, path24],
-                                       [path31, path32, path33=0, path34],
-                                       [path41, path42, path43, path44=0]]
+                6. "path_matrix" (containing LineString objects as paths): 
+                                      [[path11=None, path12, path13, path14],
+                                       [path21, path22=None, path23, path24],
+                                       [path31, path32, path33=None, path34],
+                                       [path41, path42, path43, path44=None]]
 
     """
     stations = list(gdf_input_stations["name"])
     cities = list(gdf_input_stations["city"])
-    print(stations)
     dict_distance_matrix = {}
     dict_distance_matrix["stations_index"] = stations
     
@@ -151,12 +155,12 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
         for st_destination in stations:
             index_destination = stations.index(st_destination)
 
-            # If station origin and station destination are the same insert distance = 0 or path = None
+            # If station origin and station destination are the same insert distance = 0 and path = None
             if st_origin == st_destination:
                 list_dist_st_origin.append(0)
                 list_path_st_origin.append(None)
 
-            # If the destination is listed before the origin in the stations the path and the path is valid, the distance has already been 
+            # If the destination is listed before the origin in the stations the path, the path has already been 
             # calculated. So it can be appended already by distance_matrix[index_destination][index_origin]
             elif (index_destination < index_origin) and (mirror_matrix == True):
                 list_dist_st_origin.append(distance_matrix[index_destination][index_origin])
@@ -170,16 +174,15 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                     reversed_coords.append(list_coords[x])
                 list_path_st_origin.append(sg.LineString(reversed_coords))
 
-            # Only calculate the path and distance new if the destination station is listed 
-            # after the origin station in the stations list
+            # Only calculate the path and distance new if the destination station is listed after the origin station in the stations list
             elif (index_destination > index_origin) and (mirror_matrix == True):
                 try:    
                     shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                     list_path_st_origin.append(shortest_path_result)
                     distance = shortest_path_result.length/1000
-                    print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
+                    e.info(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
                     list_dist_st_origin.append(distance)
-                # if the calculation of shortest path fails, add high distance and None object as path
+                # if the calculation of shortest path fails, try to figure out which station is the problem
                 except:
                     # try to go to to another destination station to check if the origin is the problem
                     index_dest_trial = 0
@@ -189,10 +192,12 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                             shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
                         except:
                             index_dest_trial += 1
+                        
                         #else: # if try worked
                             #e.die(f"Couldn't find a path to {dict_distance_matrix['stop'][index_destination]}. Sorry, but you must remove {cities[index_destination]} from your input")
                     # if the while loop hasn't stop by the die unction yet, the origin station is the problem
                     #e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
+
 
             # If mirror_matrix = False just calculate everything
             else:
@@ -217,28 +222,25 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                     #e.die(f"Couldn't find a path from {dict_distance_matrix['stop'][index_origin]}. Sorry, but you must remove {cities[index_origin]} from your input")
 
 
-        # After all distances from the origin station have been calculated check if it can be reached and append it to the matrix
+
+        # After all distances from the origin station have been calculated append it to the path and distance matrix
         distance_matrix.append(list_dist_st_origin)
         path_matrix.append(list_path_st_origin)
-
-        # Reset the distance and list to an empty list
-        list_dist_st_origin = []
-        list_path_st_origin = []
 
     # After the matrices have been created insert it to the dictionary
     dict_distance_matrix["distance_matrix"] = distance_matrix
     dict_distance_matrix["path_matrix"] = path_matrix
 
-    pp.pprint(dict_distance_matrix)
-
     return dict_distance_matrix
 
 
 def tsp_solution(manager, routing, solution, dict_distance_matrix):
-    #TODO add informations to the DocString!
-    """prints solution on console."""
-    print('Objective: {} miles'.format(solution.ObjectiveValue()))
-    
+    """ This function is part of the following tsp_calculation function, prints the route and plan_output and returns
+    the plan_output (the order of cities in the optimized route)
+
+    Returns:
+        plan_output
+    """   
     # create the output with index names
     index = routing.Start(0)
     plan_output = "" #starting string
@@ -270,7 +272,15 @@ def tsp_solution(manager, routing, solution, dict_distance_matrix):
 
 
 def tsp_calculation(dict_distance_matrix: dict):
-    # TODO add informatino to docstring
+    """This function solves the Travelling Salesman Problem and finds the optimized (shortest) route to connect all
+    input cities with eachother. The first city will be the start and end city in this route
+
+    Args:
+        dict_distance_matrix (dict): The dictionary containing the distance matrix, num_vehicles and depot
+
+    Returns:
+        str: plan_output by def tsp_solution
+    """
   
     # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(len(dict_distance_matrix['distance_matrix']), dict_distance_matrix['num_vehicles'], dict_distance_matrix['depot'])
@@ -280,8 +290,7 @@ def tsp_calculation(dict_distance_matrix: dict):
     
 
     def distance_callback(from_index, to_index):
-         # TODO change comments
-        """Returns the distance between the two nodes."""
+        """Returns the distance between the two nodes, extracted from the distance matrix"""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
@@ -299,7 +308,7 @@ def tsp_calculation(dict_distance_matrix: dict):
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
     
-    # Print solution on console.
+    # Print solution on console and returns plan_ouput.
     if solution: 
         plan_output = tsp_solution(manager, routing, solution, dict_distance_matrix)
         return plan_output

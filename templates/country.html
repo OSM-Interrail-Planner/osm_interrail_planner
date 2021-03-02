@@ -18,28 +18,47 @@
 
 <style>
     body,h1 {font-family: Verdana, Geneva, Tahoma, sans-serif}
+    
     body {
-      background-image: url('http://www.marcusward.co/wp-content/uploads/2015/09/EU-Flags.jpg');
-      background-size: 2000px 1500px;
+        
+    background-image: url('http://www.marcusward.co/wp-content/uploads/2015/09/EU-Flags.jpg');
+    background-size: 2000px 1500px;
       
-      https://st4.depositphotos.com/1000434/27156/i/600/depositphotos_271568570-stock-photo-vintage-travel-background-with-retro.jpg
-      background-repeat: no-repeat;
+    min-width:300px;
+    background-repeat: no-repeat;
       
     }
+    section {
+    
+    background-color: rgba(197, 196, 196, 0.2);
+    backdrop-filter: blur(4px);
+    width: 840px;
+    height: 550px;
+    padding: 10px;
+    position: absolute;
+    top: 15%;
+    left: 26.5%;
+    margin: 0;
+        }
+
+    
 </style> 
    
 <body>
-    <p class = box> </p>
+
+    <p> (Must choose adjacent/neighboring countries)
+<section>
+    <p class = box style=> </p>
     <div>
-    <h1 class=headline style="color:rgb(255, 255, 255);text-align:center;font-size:60px;">
+    <h1 class=headline>
         Which countries do you want to visit?
     </h1>
-    <p> (Only use adjacent/neighbored countries)
+   
     </div>
     <input class = search type="text" placeholder="Filter options here.." id="myInput" onkeyup="filterFunction()">
     <div id="myDropdown" class="dropdown-content">
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;">
         <label for="country1">Country 1:
             <select name= option_list method="GET" action="/" id="country1">
                 {% for o in option_list %}
@@ -49,7 +68,7 @@
         </label></p>
     </div>
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 46%;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;top: 51%;">
         <label for="country2">Country 2:
             <select name= option_list method="GET" action="/" id="country2">
                 {% for o in option_list %}
@@ -59,7 +78,7 @@
         </label></p>
     </div>
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 52%;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;top: 56%;">
         <label for="country3">Country 3:
             <select name= option_list method="GET" action="/" id="country3">
                 {% for o in option_list %}
@@ -69,7 +88,7 @@
         </label></p>
     </div>
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 58%;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;top: 61%;">
         <label for="country4">Country 4:
             <select name= option_list method="GET" action="/" id="country4">
                 {% for o in option_list %}
@@ -79,7 +98,7 @@
         </label></p>
     </div>
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 64%;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;top: 66%;">
         <label for="country5">Country 5:
             <select name= option_list method="GET" action="/" id="country5">
                 {% for o in option_list %}
@@ -89,7 +108,7 @@
         </label></p>
     </div>
     <div>
-    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:20px;top: 70%;">
+    <p class=selections1 style="color:rgb(5, 5, 5);text-align:center;font-size:25px;top: 71%;">
         <label for="country6">Country 6:
             <select name= option_list method="GET" action="/" id="country6">
                 {% for o in option_list %}
@@ -101,42 +120,33 @@
     <button class=button onclick="country();">Submit</button>
     </div>
     </div>  
-
+</section>
 
     <style>
 
         .headline {
         margin: 0;
         position: absolute;
-        top: 23%;
+        top: 18%;
         -webkit-text-stroke: 0.15px rgb(126, 125, 173);
         left: 50%;
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
+        color:rgb(255, 255, 255);
+        text-align:center;
+        font-size:60px;
+        width: 100%;
     }
     
     .selections1
         {
         margin: 0;
         position: absolute;
-        top: 40%;
+        top: 46%;
         -webkit-text-stroke: 0.15px rgb(126, 125, 173);
         left: 50%;
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
-    }
-
-        
-        .box {
-            background-color: rgba(197, 196, 196, 0.2);
-            backdrop-filter: blur(4px);
-            width: 700px;
-            height: 520px;
-            padding: 10px;
-            position: absolute;
-            top: 10%;
-            left: 26.5%;
-            margin: 0;
     }
 
         .button {
@@ -149,7 +159,7 @@
             font-family: Verdana, Geneva, Tahoma, sans-serif;
             margin: 0;
             position: absolute;
-            top: 78%;
+            top: 85%;
             left: 50%;
             -ms-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
@@ -160,7 +170,7 @@
             height: 15px;
             margin: 0;
             position: absolute;
-            top: 35%;
+            top: 40%;
             -webkit-text-stroke: 0.15px rgb(126, 125, 173);
             left: 50%;
             -ms-transform: translate(-50%, -50%);

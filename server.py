@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, redirect
 import geopandas as gpd
 import folium
-import random
 import main
 import etl as e
 import flask_folium as ff
-from datetime import datetime, time
 import json
+
 
 app = Flask(__name__)
 
@@ -31,6 +30,7 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
     # perform OSM data extraction from Overpass API
     main.extraction(list_country)
 
+    # perform the preprocessin of the data (including the routable network)
     all_cities_list = main.network_preprocessing(list_country)
     all_cities_list.sort()
     all_cities_list.append('None')
@@ -46,6 +46,7 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
 def base(str1, str2, str3, str4, str5, str6):
     list_city = [str1, str2, str3, str4, str5, str6]
     copy = list_city
+
     if 'None' in list_city:
         list_city.remove('None')
     try:
@@ -95,8 +96,6 @@ def base(str1, str2, str3, str4, str5, str6):
     try: 
         gdf_close_natus = gpd.read_file("data/route/close_natus").set_crs("EPSG:32629")
         gdf_close_natus = gdf_close_natus.to_crs("EPSG:4326")
-        # create lines from shapely (lon, lat), to folium (lat, lon)
-        #gdf_close_natus = ff.line_geom(gdf_close_natus)
     except: pass
 
     # add the nature parks
@@ -127,4 +126,5 @@ def base(str1, str2, str3, str4, str5, str6):
     return head + map._repr_html_()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    Timer(1, webbrowser.open('http://127.0.0.1:5000/')).start()
+    app.run(debug=True, use_reloader=False)
