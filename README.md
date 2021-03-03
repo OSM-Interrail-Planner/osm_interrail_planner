@@ -1,5 +1,5 @@
 # Interrail planer
-![Test Image 6](z_README_img/Homepage.jpg | width=100)
+![Test Image 6](z_README_img/Homepage.jpg)
 
 
 ## The application
