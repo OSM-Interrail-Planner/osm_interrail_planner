@@ -8,9 +8,11 @@ From OpenStreetMap (OSM) through the Overpass API, the application collects data
 
 ## Input parameters
 The input parameters from users are:
-- Which countries to visit
+- Which countries to visit:
+
 ![Test Image 6](z_README_img/Choose_country.jpg)
-- Which cities to visit
+- Which cities to visit:
+
 ![Test Image 6](z_README_img/Choose_city.jpg)
 
 ## Requirements and script running
@@ -51,6 +53,8 @@ The routing process consist of the following steps:
 
 ## Output and Visualisation
 Using the Python based micro web-framework Flask, the final route is presented on a map in the user's web browser toghetere with reccomended cities, cultural sites and natural parks.
+
+![Test Image 6](z_README_img/Output.jpg)
 
 ## Possible issues
 - Data download: Downloading OSM data from Overpass API can fail for big countries like Germany or France. Furthermore, after several trials in a short time span you can exceed your download contingent and your host name / IP-adress can be blocked. Either you can use already downloaded data for certain countries (see in data/original) or try the download later.
