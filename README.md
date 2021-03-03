@@ -41,7 +41,9 @@ The routing process consist of the following steps:
 Using the Python based micro web-framework Flask, the final route is presented on a map in the user's web browser toghetere with reccomended cities, cultural sites and natural parks.
 
 ## Possible issues
-- Downloading OSM data form Overpass API can exceed your download contingent and your host name / IP-adress can be blocked. Either use already downloaded data (see countries in data/original) or try the download later
-- Some stations of the cities cannot be reached by the routing. This is due to unconnected railway networks, which is caused by the preprocessing or creation of network.
+- Data download: Downloading OSM data from Overpass API can fail for big countries like Germany or France. Furthermore, after several trials in a short time span you can exceed your download contingent and your host name / IP-adress can be blocked. Either you can use already downloaded data for certain countries (see in data/original) or try the download later.
+- Routing problems can occur and no path can be found for some cities (This is due to unconnected railway networks, which is caused by the preprocessing or creation of the graph network. It also occurs if you choose countries which do not have a railway connection). In this case the program redirects you to the city selection site and shows you which city is the problem city.
+(note 1: To detect one sigle problem city at least three cities have to be chosen as destinations)
+(note 2: Even when the problem city is removed from you input it can happen, that another city also causes path errors. Then, you are redirected again)
  
 
