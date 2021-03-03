@@ -14,12 +14,12 @@ The input parameters from users are:
 
 ![Test Image 6](z_README_img/Choose_city.jpg)
 
-## Requirements and script running
-Following is required to run the program.
-- Python 3
-- the packages of the required_packages.txt
-- Run python server.py in the console to start the program
-- After submissions of choices in the browser and during the web loading, there are info messages in the python console printed
+## Requirements
+- Python 3, with the packages outlined in **required_packages.txt**
+
+## How to run the application
+- Run **python server.py** in the console to start the program (opens automatically in your web browser).
+PS: while the web browser is loading, info messages are being printed in the python console.
 
 ## Data
 The data extracted from OSM is:
