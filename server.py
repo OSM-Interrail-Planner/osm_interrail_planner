@@ -109,13 +109,19 @@ def base(str1, str2, str3, str4, str5, str6):
     gdf_rails = gdf_rails.to_crs("EPSG:4326")
 
     # add the nature parks
-    ff.add_nature_to_map(gdf_close_natus, map)
+    try:
+        ff.add_nature_to_map(gdf_close_natus, map)
+    except: pass
 
     # add the corresponding close cities
-    ff.add_close_cities_to_map(gdf_close_cities, map)
+    try:
+        ff.add_close_cities_to_map(gdf_close_cities, map)
+    except: pass
 
     # add the corresponding close heris
-    ff.add_close_heris_to_map(gdf_close_heris, map)
+    try:
+        ff.add_close_heris_to_map(gdf_close_heris, map)
+    except: pass
     
     # add route to the basemap
     ff.add_route_to_map(gdf_best_route, map)

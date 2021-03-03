@@ -40,7 +40,7 @@ def add_close_cities_to_map(gdf_close_cities: gpd.GeoDataFrame, basemap):
     """ 
     # add the corresponding close cities
     try:
-        fg_cities = folium.FeatureGroup('Close Cities')
+        fg_cities = folium.FeatureGroup(name='Close Cities', show=False)
         for j, rowj in gdf_close_cities.iterrows():
             folium.CircleMarker(
                 location=rowj["folium_geom"],
@@ -66,7 +66,7 @@ def add_close_heris_to_map(gdf_close_heris: gpd.GeoDataFrame, basemap):
     """
     # add close heris as cluster markers
     try:
-        fg_heris = folium.FeatureGroup('Close Heritages')
+        fg_heris = folium.FeatureGroup(name='Close Heritages', show=False)
         marker_cluster = MarkerCluster()
         for i, row in gdf_close_heris.iterrows():
             folium.Marker(
@@ -111,7 +111,7 @@ def add_nature_to_map(gdf_close_natus: gpd.GeoDataFrame, basemap):
         basemap (folium.map)
     """
     # make a feature group for natural parks
-    fg_nature = folium.FeatureGroup("Natural Parks")
+    fg_nature = folium.FeatureGroup(name="Natural Parks", show=False)
     folium.GeoJson(
         gdf_close_natus,
         style_function=lambda feature: {
@@ -139,7 +139,7 @@ def add_rails_to_map(gdf_rails: gpd.GeoDataFrame, basemap):
         basemap (folium.map)
     """
     # make a feature group for natural parks
-    fg_rails = folium.FeatureGroup("Railway Network")
+    fg_rails = folium.FeatureGroup(name="Railway Network", show=False)
     folium.GeoJson(
         gdf_rails,
         style_function=lambda feature: {

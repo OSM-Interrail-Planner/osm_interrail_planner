@@ -4,6 +4,7 @@ import time
 import sys
 import geopandas as gpd
 import os
+import shutil
 
 URL = "http://overpass-api.de/api/interpreter"
 NAME_RAIL = "railways"
@@ -191,8 +192,12 @@ def routing(list_input_city: list):
     Args:
         list_input_city (list): List of input cities
     """
+    # Check if there is still final route data and delete it
+    if os.path.exists("data/route") == True:
+        shutil.rmtree("data/route")
+        os.makedirs("data/route")
 
-    # First, open shapefiles as GeoDataFrames
+    # Open shapefiles as GeoDataFrames
     city_gdf = gpd.read_file(fname_city_processed)
     station_gdf = gpd.read_file(fname_station_processed)   
     rail_gdf = gpd.read_file(fname_rail_processed)
