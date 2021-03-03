@@ -111,7 +111,7 @@ def network_preprocessing(countries: list) -> None:
     # check if preprocessed data for the composition of countries exists already
     if os.path.exists(f"data/processed/z_database/{fname_country}") == True:
         e.info("PREPROCESSING HAS ALREADY BEEN DONE FOR THESE COUNTRIES")
-        e.info("GETTIN DATA FOR THESE COUNTRIES")
+        e.info("GETTING DATA FOR THESE COUNTRIES FROM PREPROCESSING STORAGE")
         # read and save the found combination in processed folder structure (like a update of processed/cites...)
         station_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/station")
         e.save_as_shp(station_all_gdf, fname_station_processed)
