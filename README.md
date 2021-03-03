@@ -12,10 +12,9 @@ The input parameters from users are:
 ## Requirements and script running
 Following is required to run the program.
 - Python 3
-- the packages of the requirements.txt
+- the packages of the required_packages.txt
 - Run python server.py in the console to start the program
-- Open server in web browser for making interactive choices and see the web map as final result
-- After submissions of choices and during the web loading, there are info messages in the python console printed
+- After submissions of choices in the browser and during the web loading, there are info messages in the python console printed
 
 ## Data
 The data extracted from OSM is:
@@ -48,9 +47,7 @@ Using the Python based micro web-framework Flask, the final route is presented o
 
 ## Possible issues
 - Data download: Downloading OSM data from Overpass API can fail for big countries like Germany or France. Furthermore, after several trials in a short time span you can exceed your download contingent and your host name / IP-adress can be blocked. Either you can use already downloaded data for certain countries (see in data/original) or try the download later.
-- Routing problems can occur and no path can be found for some cities (This is due to unconnected railway networks in OSM data, or caused by the preprocessing or creation of the graph network. It also occurs if you choose countries which do not have a railway connection). In this case the program redirects you to the city selection site and shows you which city is the problem city.  
+- Routing problems can occur and no path can be found for some cities (this is due to unconnected railway networks in OSM data, or caused by the preprocessing or creation of the graph network. It also occurs if you choose non-adjacent countries without a railway connection). In this case the program redirects you to the city selection site and shows you which city is the problem city.  
 (note 1: To detect one single problem city at least three cities have to be chosen as destinations)  
-(note 2: Even when the first problem city is removed from you input, it can happen that another city also causes path errors. Then, you are redirected to the city selection site again)
-- Translation of names: For cities and stations in Greece and North Macedonia you can only choose feature where an english name exists. For all other countries and data local names are displayed. Many warnings can be printed in the console due to the conversion into shapefiles (in a postrgreSQL database this problem could be avoided)
- 
-
+(note 2: Even when the first problem city is removed from your input, it can happen that another city also causes path errors. Then, you are redirected to the city selection site again)
+- Translation of names: For cities and stations in Greece and North Macedonia you can only choose features where an english name exists. For all other countries and data local names are displayed. Many warnings can be printed in the console due to the conversion into shapefiles (in a postrgreSQL database this problem could be avoided)
