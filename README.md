@@ -11,7 +11,7 @@ From OpenStreetMap (OSM) through the Overpass API, the application collects data
 ## How to run the application
 - Run **python server.py** in the console to start the program (opens automatically in your web browser).
 - PS: while the web browser is loading, info messages are being printed in the python console.
-- 
+
 ## Input parameters
 The input parameters from users are:
 - Which countries to visit:
