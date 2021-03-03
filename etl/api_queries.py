@@ -92,10 +92,13 @@ def query_heritage(country: str):
         // AND statement by [key1=value1](and)[key2=value2]
         node["heritage"="1"](area.searchArea);
         node["heritage"="2"](area.searchArea);
+        node["tourism"="museum"](area.searchArea);
         way["heritage"="1"](area.searchArea);
         way["heritage"="2"](area.searchArea);
+        way["tourism"="museum"](area.searchArea);
         relation["heritage"="1"](area.searchArea);
         relation["heritage"="2"](area.searchArea);
+        relation["tourism"="museum"](area.searchArea);
         );
         out qt center;
         """

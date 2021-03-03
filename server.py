@@ -17,7 +17,7 @@ def start():
 
 @app.route("/countries")
 def select_countries():
-    all_countries_list = ['Portugal', 'Spain', "France", "Nederland", "Norway", "Sweden", "United Kingdom", "Schweiz", "Austria", "Belgium", "Luxembourg", "Italia", "Germany", "Ireland", "Liechtenstein", "Danmark", "Polska", "Czechia", "Slovensko" ,"Hungary", "Slovenia", "Croatia", "Bosnia and Herzegovina", "Serbia", "Montenegro", "Albania", "Kosovo", "North Macedonia", "Greece", "Bulgaria", "Turkey", "Romania", "Moldova", "Lithuania", "Latvia", "Estonia", "Finland"]
+    all_countries_list = ['Portugal', 'Spain', "France", "Nederland", "Norway", "Sweden", "United Kingdom", "Schweiz", "Austria", "Belgium", "Luxembourg", "Italia", "Germany", "Ireland", "Liechtenstein", "Danmark", "Polska", "Czechia", "Slovensko" ,"Hungary", "Slovenia", "Croatia", "Bosnia and Herzegovina", "Serbia", "Montenegro", "Albania", "Kosovo", "North Macedonia", "Greece", "Bulgaria", "Romania", "Moldova", "Lithuania", "Latvia", "Estonia", "Finland"]
     all_countries_list.sort()
     all_countries_list.append('None')
     return render_template('country.html', option_list = all_countries_list)
@@ -98,28 +98,33 @@ def base(str1, str2, str3, str4, str5, str6):
         gdf_close_heris = ff.point_geom(gdf_close_heris)
     except: pass
 
-    # Prepare close heritage data if not empty
+    # Prepare close nature data if not empty
     try: 
         gdf_close_natus = gpd.read_file("data/route/close_natus").set_crs("EPSG:32629")
         gdf_close_natus = gdf_close_natus.to_crs("EPSG:4326")
     except: pass
 
+    # Prepare railway network data
+    gdf_rails = gpd.read_file("data/processed/railways").set_crs("EPSG:32629")
+    gdf_rails = gdf_rails.to_crs("EPSG:4326")
+
     # add the nature parks
     ff.add_nature_to_map(gdf_close_natus, map)
 
-    # add the corresponding close heris
-    ff.add_close_heris_to_map(gdf_close_heris, map)
-
     # add the corresponding close cities
     ff.add_close_cities_to_map(gdf_close_cities, map)
+
+    # add the corresponding close heris
+    ff.add_close_heris_to_map(gdf_close_heris, map)
     
     # add route to the basemap
     ff.add_route_to_map(gdf_best_route, map)
 
     # add the start marker
     ff.add_starters_to_map(gdf_best_route, map)
-  
-    
+
+    # add the rail network
+    ff.add_rails_to_map(gdf_rails, map)
 
     # add the layer control for toggling the layers
     map.add_child(folium.LayerControl())
