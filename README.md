@@ -5,6 +5,13 @@ From OpenStreetMap (OSM) through the Overpass API, the application collects data
 
 ![Test Image 6](z_README_img/Homepage.jpg)
 
+## Requirements
+- Python 3, with the packages outlined in **required_packages.txt**
+
+## How to run the application
+- Run **python server.py** in the console to start the program (opens automatically in your web browser).
+- PS: while the web browser is loading, info messages are being printed in the python console.
+- 
 ## Input parameters
 The input parameters from users are:
 - Which countries to visit:
@@ -13,13 +20,6 @@ The input parameters from users are:
 - Which cities to visit:
 
 ![Test Image 6](z_README_img/Choose_city.jpg)
-
-## Requirements
-- Python 3, with the packages outlined in **required_packages.txt**
-
-## How to run the application
-- Run **python server.py** in the console to start the program (opens automatically in your web browser).
-- PS: while the web browser is loading, info messages are being printed in the python console.
 
 ## Data
 The data extracted from OSM is:
