@@ -1,10 +1,9 @@
 # Interrail planer
-![Test Image 6](z_README_img/Homepage.jpg)
-
-
-## The application
+### About the application
 This Python based application is designed to help users plan interrail trips based on their preferences of selected countries and citites in Europe. 
 From OpenStreetMap (OSM) through the Overpass API, the application collects data about the railway network in the countries selected by the user, and calculates the optimal route between the chosen multiple cities. The results are visualised in a map in your webbrowser. 
+
+![Test Image 6](z_README_img/Homepage.jpg)
 
 ## Input parameters
 The input parameters from users are:
