@@ -32,7 +32,8 @@ The pre-processing is as follows:
 - Snap stations to rails. This geograpically aligns the stations with the railway tracks. 
 - Split segments where stations are snapped to the rail, creating two segments from the original one. This enables stations to be start and end points of the network. 
 - Connecting stations by creating artificial rails between stations closer than 500 m to each other. This is to simulate changing trains at two different stations or even platforms that are near to each other.  
--> The pre-processed and merged data is as shapefiles in the folder data/processed 
+-> The pre-processed and merged data is stored as shapefiles in the folder data/processed/z_database/country1_country_2...   
+-> If data for a particular combination for countries has been already preprocessed it calls the files for the routing otherwise, preprocessing is performed the first time
 
 ## Routing
 The routing process consist of the following steps:
