@@ -50,5 +50,6 @@ Using the Python based micro web-framework Flask, the final route is presented o
 - Routing problems can occur and no path can be found for some cities (This is due to unconnected railway networks in OSM data, or caused by the preprocessing or creation of the graph network. It also occurs if you choose countries which do not have a railway connection). In this case the program redirects you to the city selection site and shows you which city is the problem city.  
 (note 1: To detect one single problem city at least three cities have to be chosen as destinations)  
 (note 2: Even when the first problem city is removed from you input, it can happen that another city also causes path errors. Then, you are redirected to the city selection site again)
+- Translation of names: For cities and stations you can only choose feature where an english name exists.  As for nature and cultural sites almost no english names were available, the local names are displayed (in some languages (greek) this leads to displayment of unknown signs due to the shp format)
  
 
