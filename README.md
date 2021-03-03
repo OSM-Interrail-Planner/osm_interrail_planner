@@ -9,11 +9,13 @@ The input parameters from users are:
 - Which countries to visit
 - Which cities to visit
 
-## Requirements
+## Requirements and script running
 Following is required to run the program.
 - Python 3
 - the packages of the requirements.txt
 - Run python server.py in the console to start the program
+- Open server in web browser for making interactive choices and see the web map as final result
+- After submissions of choices and during the web loading, there are info messages in the python console printed
 
 ## Data
 The data extracted from OSM is:
