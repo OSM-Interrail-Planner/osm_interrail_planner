@@ -138,7 +138,7 @@ def add_rails_to_map(gdf_rails: gpd.GeoDataFrame, basemap):
         gdf_rails (gpd.GeoDataFrame)
         basemap (folium.map)
     """
-    # make a feature group for natural parks
+    # make a feature group for railway network
     fg_rails = folium.FeatureGroup(name="Railway Network", show=False)
     folium.GeoJson(
         gdf_rails,
@@ -149,5 +149,29 @@ def add_rails_to_map(gdf_rails: gpd.GeoDataFrame, basemap):
             }
     ).add_to(fg_rails)
     basemap.add_child(fg_rails)
+    
+    return None
+
+
+def add_stations_to_map(gdf_stations: gpd.GeoDataFrame, basemap):
+    """This function adds the railway stations to the basemap 
+
+    Args:
+        gdf_stations (gpd.GeoDataFrame)
+        basemap (folium.map)
+    """
+    # make a feature group for stations
+    fg_stations = folium.FeatureGroup(name='Railway Stations', show=False)
+    for j, rowj in gdf_stations.iterrows():
+        folium.CircleMarker(
+            location=rowj["folium_geom"],
+            radius=5,
+            tooltip=f"{rowj['name']}",
+            popup=f"{rowj['name']}",
+            color="ffff00",
+            fill=True,
+            fill_color="black"
+            ).add_to(fg_stations)
+    basemap.add_child(fg_stations)
     
     return None

@@ -54,7 +54,7 @@ def base(str1, str2, str3, str4, str5, str6):
     # Solve the TSP with shortest paths between all destinations
     dict_distance_matrix = main.routing(list_city)
 
-    # Check if there are some error cities and if true recall the city selection site
+    # Check if there is an error city and if true recall the city selection site
     if "error_city" in dict_distance_matrix.keys():
         # get the city list from file
         with open('data/original/all_cities_json.txt') as all_cities_json:
@@ -105,8 +105,14 @@ def base(str1, str2, str3, str4, str5, str6):
     except: pass
 
     # Prepare railway network data
-    gdf_rails = gpd.read_file("data/processed/railways").set_crs("EPSG:32629")
-    gdf_rails = gdf_rails.to_crs("EPSG:4326")
+    #gdf_rails = gpd.read_file("data/processed/railways").set_crs("EPSG:32629")
+    #gdf_rails = gdf_rails.to_crs("EPSG:4326")
+
+    # Prepare station data
+    #gdf_stations = gpd.read_file("data/route/close_stations").set_crs("EPSG:32629")
+    #gdf_stations = gdf_stations.to_crs("EPSG:4326")
+    # create lines from shapely (lon, lat), to folium (lat, lon)
+    #gdf_stations = ff.point_geom(gdf_stations)
 
     # add the nature parks
     try:
@@ -130,7 +136,10 @@ def base(str1, str2, str3, str4, str5, str6):
     ff.add_starters_to_map(gdf_best_route, map)
 
     # add the rail network
-    ff.add_rails_to_map(gdf_rails, map)
+    #ff.add_rails_to_map(gdf_rails, map)
+
+    # add the rail stations
+    #ff.add_stations_to_map(gdf_stations, map)
 
     # add the layer control for toggling the layers
     map.add_child(folium.LayerControl())

@@ -10,9 +10,9 @@ URL = "http://overpass-api.de/api/interpreter"
 NAME_RAIL = "railways"
 COLUMNS_RAIL = {"name": str}
 NAME_STAT = "stations"
-COLUMNS_STAT = {"name:en": str, "network": str}
+COLUMNS_STAT = {"name": str, "name:en": str, "network": str}
 NAME_CITY = "cities"
-COLUMNS_CITY = {"name:en": str, "place": str, "population": str}
+COLUMNS_CITY = {"name": str, "name:en": str, "place": str, "population": str}
 NAME_HERI = "heritage"
 COLUMNS_HERI = {"name": str, "heritage": str}
 NAME_NATU = "nature"
@@ -67,7 +67,7 @@ def extraction(countries: list) -> None:
         if os.path.exists(f"{fname_city_original}_{country}.geojson") == False: 
             query_city = e.query_city(country)
             e.info(f"EXTRACTION: DOWNLOADING CITY DATA IN {country}")
-            city_data = e.get_data(URL, query_city, 'City', country)
+            city_data = e.get_data(URL, query_city, 'City', country)                
             e.save_as_json_geojson(city_data, f"{fname_city_original}_{country}")
         else:
             e.info(f"EXTRACTION OF CITY DATA IN {country} HAS ALREADY BEEN DONE")
@@ -103,6 +103,36 @@ def network_preprocessing(countries: list) -> None:
         countries (list): List of destination countries 
     """
 
+    # create a string for country names to use in saving
+    countries = list(countries)
+    countries.sort()
+    fname_country = "_".join(countries)
+
+    # check if preprocessed data for the composition of countries exists already
+    if os.path.exists(f"data/processed/z_database/{fname_country}") == True:
+        e.info("PREPROCESSING HAS ALREADY BEEN DONE FOR THESE COUNTRIES")
+        e.info("GETTIN DATA FOR THESE COUNTRIES")
+        # read and save the found combination in processed folder structure (like a update of processed/cites...)
+        station_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/station")
+        e.save_as_shp(station_all_gdf, fname_station_processed)
+
+        rail_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/rail")
+        e.save_as_shp(rail_all_gdf, fname_rail_processed)
+
+        city_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/city")
+        e.save_as_shp(city_all_gdf, fname_city_processed)
+
+        heri_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/heri")
+        e.save_as_shp(heri_all_gdf, fname_heri_processed)
+
+        natu_all_gdf = gpd.read_file(f"data/processed/z_database/{fname_country}/natu")
+        e.save_as_shp(natu_all_gdf, fname_natu_processed)
+
+        city_all_gdf = city_all_gdf[city_all_gdf.name  != "nan"]
+        all_cities_list = e.all_cities_list(city_all_gdf)
+
+        return all_cities_list
+
     e.info("PREPROCESSING: STARTED")
 
     # create general gpd.GeoDataFrame
@@ -112,7 +142,8 @@ def network_preprocessing(countries: list) -> None:
     heri_all_gdf = gpd.GeoDataFrame()
     natu_all_gdf = gpd.GeoDataFrame()
 
-    for country in countries:    
+    for country in countries:  
+
         # Reading the .json files for rail, stations, city from the folder data/original
         rail_json = e.open_json(f"{fname_rail_original}_{country}")
         station_json = e.open_json(f"{fname_station_original}_{country}")
@@ -125,6 +156,8 @@ def network_preprocessing(countries: list) -> None:
 
         station_gdf = e.convert_to_gdf(station_json, COLUMNS_STAT, ['Point', 'MultiPoint'])
         station_gdf = e.reproject(station_gdf, EPSG)
+        if country == 'Greece' or country == 'North Macedonia':
+            station_gdf["name"] = station_gdf["name:en"]
         station_all_gdf = station_all_gdf.append(station_gdf, ignore_index=True)
 
         rail_gdf = e.convert_to_gdf(rail_json, COLUMNS_RAIL, ['LineString', 'MulitLineString'])
@@ -133,6 +166,8 @@ def network_preprocessing(countries: list) -> None:
 
         city_gdf = e.convert_to_gdf(city_json, COLUMNS_CITY, ['Point', 'MultiPoint'])
         city_gdf = e.reproject(city_gdf, EPSG)
+        if country == 'Greece' or country == 'North Macedonia':
+            city_gdf["name"] = city_gdf["name:en"]
         city_all_gdf = city_all_gdf.append(city_gdf, ignore_index=True)
 
         heri_gdf = e.overpass_json_to_gpd_gdf(heri_json, COLUMNS_HERI, ['Point', 'MultiPoint'])
@@ -143,16 +178,6 @@ def network_preprocessing(countries: list) -> None:
         natu_gdf = e.reproject(natu_gdf, EPSG)
         natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
-
-    #change column name from "name:en" to "name"
-    if 'name:en' in station_all_gdf.columns:
-        station_all_gdf = station_all_gdf.rename(columns={"name:en": "name"})
-    if 'name:en' in city_all_gdf.columns:
-        city_all_gdf = city_all_gdf.rename(columns={"name:en": "name"})
-    if 'name:en' in heri_all_gdf.columns:
-        heri_all_gdf = heri_all_gdf.rename(columns={"name:en": "name"})
-    if 'name:en' in natu_all_gdf.columns:
-        natu_all_gdf = natu_all_gdf.rename(columns={"name:en": "name"})
 
     e.info("PREPROCSSING: MERGED ALL COUNTRIES")
 
@@ -170,10 +195,16 @@ def network_preprocessing(countries: list) -> None:
     e.info("PREPROCESSING: ROUTABLE NETWORK COMPLETED")
 
     # save as shapefiles
+    os.makedirs(f"data/processed/z_database/{fname_country}")
+    e.save_as_shp(station_all_gdf, f"data/processed/z_database/{fname_country}/station")
     e.save_as_shp(station_all_gdf, fname_station_processed)
+    e.save_as_shp(rail_all_gdf, f"data/processed/z_database/{fname_country}/rail")
     e.save_as_shp(rail_all_gdf, fname_rail_processed)
+    e.save_as_shp(city_all_gdf, f"data/processed/z_database/{fname_country}/city")
     e.save_as_shp(city_all_gdf, fname_city_processed)
+    e.save_as_shp(heri_all_gdf, f"data/processed/z_database/{fname_country}/heri")
     e.save_as_shp(heri_all_gdf, fname_heri_processed)
+    e.save_as_shp(natu_all_gdf, f"data/processed/z_database/{fname_country}/natu")
     e.save_as_shp(natu_all_gdf, fname_natu_processed)
 
     e.info("PREPROCESSING: COMPLETED")
@@ -181,7 +212,6 @@ def network_preprocessing(countries: list) -> None:
     city_all_gdf = city_all_gdf[city_all_gdf.name  != "nan"]
     all_cities_list = e.all_cities_list(city_all_gdf)
     
-
     return all_cities_list
 
 
@@ -239,5 +269,11 @@ def routing(list_input_city: list):
     try:
         e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")
+
+    # select stations on the way
+    #close_stations = r.features_on_way(station_gdf, best_route, [], 2000, crs=EPSG)
+    #try:
+    #    e.save_as_shp(close_stations, 'data/route/close_stations')
+    #except: e.info("no close stations on your best route")
 
     return dict_distance_matrix
