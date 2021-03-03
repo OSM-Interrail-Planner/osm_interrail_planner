@@ -23,6 +23,7 @@ The data extracted from OSM is:
 - cities
 - heritage/cultural sites
 - natural parks  
+
 -> All the raw data is as json and geojson in the folder data/original
 
 ## Pre-processing
@@ -31,6 +32,7 @@ The pre-processing is as follows:
 - Snap stations to rails. This geograpically aligns the stations with the railway tracks. 
 - Split segments where stations are snapped to the rail, creating two segments from the original one. This enables stations to be start and end points of the network. 
 - Connecting stations by creating artificial rails between stations closer than 500 m to each other. This is to simulate changing trains at two different stations or even platforms that are near to each other.  
+
 -> The pre-processed and merged data is stored as shapefiles in the folder data/processed/z_database/country1_country_2...   
 -> If data for a particular combination for countries has been already preprocessed it calls the files for the routing otherwise, preprocessing is performed the first time
 
@@ -40,6 +42,7 @@ The routing process consist of the following steps:
 - Creating a shortest path distance matrix between all combinations of input cities using Dijkstra's algorithm.
 - Based on the distance matrix, the "traveling salesman problem (TSP)" is solved.
 - Finally, other cities, cultural sites and natural parks that are in geographical proximity to the route are linked to the route.   
+
 -> The final routing data is as shapefiles in the folder data/route
 
 ## Output and Visualisation
