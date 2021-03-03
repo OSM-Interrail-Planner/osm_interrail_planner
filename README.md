@@ -1,5 +1,6 @@
 # Interrail planer
-![Alt text](z_README_img/Homepage.png?raw=true "Title")
+
+![plot](./z_README_img/Homepage.png)
 
 ## The application
 This Python based application is designed to help users plan interrail trips based on their preferences of selected countries and citites in Europe. 
