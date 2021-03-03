@@ -187,21 +187,25 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 except:
                     print(f"no path between {st_origin} to {st_destination}")
                     # try to go to to another destination station to check if the origin is the problem
-                    index_dest_trial = 0
-                    while index_dest_trial < len(stations):
-                        try:
-                            dest_trial = stations[index_dest_trial]
-                            shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
-                        except:
-                            index_dest_trial += 1
-                        else: # if try worked
-                            print(f"destination problem: {dict_distance_matrix['stop'][index_destination]}")
-                            dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
-                            return dict_distance_matrix
-                    # if the while loop hasn't stop by the return yet, the origin station is the problem
-                    print(f"origin problem: {dict_distance_matrix['stop'][index_origin]}")
-                    dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
-                    return dict_distance_matrix
+                    if len(stations) == 2:
+                        dict_distance_matrix["error_city"] = f"{dict_distance_matrix['stop'][index_destination]} or {dict_distance_matrix['stop'][index_origin]}"
+                        return dict_distance_matrix
+                    else:    
+                        index_dest_trial = 0
+                        while index_dest_trial < len(stations):
+                            try:
+                                dest_trial = stations[index_dest_trial]
+                                shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
+                            except:
+                                index_dest_trial += 1
+                            else: # if try worked
+                                print(f"destination problem: {dict_distance_matrix['stop'][index_destination]}")
+                                dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
+                                return dict_distance_matrix
+                        # if the while loop hasn't stop by the return yet, the origin station is the problem
+                        print(f"origin problem: {dict_distance_matrix['stop'][index_origin]}")
+                        dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_origin]
+                        return dict_distance_matrix
 
             # If mirror_matrix = False just calculate everything
             else:
@@ -214,19 +218,24 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                 except:
                     print(f"no path between {st_origin} to {st_destination}")
                     # try to go to to another destination station to check if the origin is the problem
-                    index_dest_trial = 0
-                    while index_dest_trial < len(stations):
-                        try:
-                            dest_trial = stations[index_dest_trial]
-                            shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
-                        except:
-                            index_dest_trial += 1
-                        else: # if try worked
-                            dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
-                            return dict_distance_matrix
-                    # if the while loop hasn't stop by the die unction yet, the origin station is the problem
-                    if index_dest_trial == len(stations)-1:
-                        dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
+                    if len(stations) == 2:
+                        dict_distance_matrix["error_city"] = f"{dict_distance_matrix['stop'][index_destination]} or {dict_distance_matrix['stop'][index_origin]}"
+                        return dict_distance_matrix
+                    else:    
+                        index_dest_trial = 0
+                        while index_dest_trial < len(stations):
+                            try:
+                                dest_trial = stations[index_dest_trial]
+                                shortest_path(gdf_input_stations, st_origin, dest_trial, rail_segments_gdf)
+                            except:
+                                index_dest_trial += 1
+                            else: # if try worked
+                                print(f"destination problem: {dict_distance_matrix['stop'][index_destination]}")
+                                dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_destination]
+                                return dict_distance_matrix
+                        # if the while loop hasn't stop by the return yet, the origin station is the problem
+                        print(f"origin problem: {dict_distance_matrix['stop'][index_origin]}")
+                        dict_distance_matrix["error_city"] = dict_distance_matrix['stop'][index_origin]
                         return dict_distance_matrix
 
         # After all distances from the origin station have been calculated append it to the path and distance matrix

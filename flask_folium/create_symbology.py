@@ -129,3 +129,25 @@ def add_nature_to_map(gdf_close_natus: gpd.GeoDataFrame, basemap):
     basemap.add_child(fg_nature)
     
     return None
+
+
+def add_rails_to_map(gdf_rails: gpd.GeoDataFrame, basemap):
+    """This function adds the railway network to the basemap 
+
+    Args:
+        gdf_rails (gpd.GeoDataFrame)
+        basemap (folium.map)
+    """
+    # make a feature group for natural parks
+    fg_rails = folium.FeatureGroup("Railway Network")
+    folium.GeoJson(
+        gdf_rails,
+        style_function=lambda feature: {
+            'color' : '#1C1C1C',
+            'weight' : 1,
+            'opacity': 0.8
+            }
+    ).add_to(fg_rails)
+    basemap.add_child(fg_rails)
+    
+    return None
