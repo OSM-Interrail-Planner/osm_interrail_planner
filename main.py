@@ -226,6 +226,8 @@ def routing(list_input_city: list):
     if os.path.exists("data/route") == True:
         shutil.rmtree("data/route")
         os.makedirs("data/route")
+    else:
+        os.makedirs("data/route")
 
     # Open shapefiles as GeoDataFrames
     city_gdf = gpd.read_file(fname_city_processed)
