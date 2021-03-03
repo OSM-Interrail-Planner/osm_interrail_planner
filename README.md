@@ -9,7 +9,9 @@ From OpenStreetMap (OSM) through the Overpass API, the application collects data
 ## Input parameters
 The input parameters from users are:
 - Which countries to visit
+![Test Image 6](z_README_img/Choose_country.jpg)
 - Which cities to visit
+![Test Image 6](z_README_img/Choose_city.jpg)
 
 ## Requirements and script running
 Following is required to run the program.
