@@ -1,4 +1,5 @@
 import geopandas as gpd
+from shapely.geometry import LineString
 
 
 def line_geom(line_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -12,7 +13,7 @@ def line_geom(line_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     new_lines = []
     for i, row in line_gdf.iterrows():
-        line = list(row["geometry"].coords)
+        line = list(LineString(row["geometry"]).coords)
         new_line = []
         for point in line:
             new_line.append([point[1], point[0]])
