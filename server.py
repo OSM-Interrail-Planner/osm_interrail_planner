@@ -64,8 +64,8 @@ def base(str1, str2, str3, str4, str5, str6):
             all_cities_list.append(element)
         # print hint of which cities cannot be used
         head = f""" 
-                <h1 style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(102, 0, 0);float: center;text-align:center;font-size:30px;">
-                Sorry! We couldn't find a path to/from {dict_distance_matrix["error_city"]} </h1>
+                <p style="font-family: Verdana, Geneva, Tahoma, sans-serif;color:rgb(102, 0, 0);float: center;text-align:center;font-size:30px;">
+                Sorry! We couldn't find a path to/from {dict_distance_matrix["error_city"]} </p>
                 """
         return head + render_template('city.html', option_list = all_cities_list)
 
@@ -104,16 +104,6 @@ def base(str1, str2, str3, str4, str5, str6):
         gdf_close_natus = gdf_close_natus.to_crs("EPSG:4326")
     except: pass
 
-    # Prepare railway network data
-    #gdf_rails = gpd.read_file("data/processed/railways").set_crs("EPSG:32629")
-    #gdf_rails = gdf_rails.to_crs("EPSG:4326")
-
-    # Prepare station data
-    #gdf_stations = gpd.read_file("data/route/close_stations").set_crs("EPSG:32629")
-    #gdf_stations = gdf_stations.to_crs("EPSG:4326")
-    # create lines from shapely (lon, lat), to folium (lat, lon)
-    #gdf_stations = ff.point_geom(gdf_stations)
-
     # add the nature parks
     try:
         ff.add_nature_to_map(gdf_close_natus, map)
@@ -135,12 +125,6 @@ def base(str1, str2, str3, str4, str5, str6):
     # add the start marker
     ff.add_starters_to_map(gdf_best_route, map)
 
-    # add the rail network
-    #ff.add_rails_to_map(gdf_rails, map)
-
-    # add the rail stations
-    #ff.add_stations_to_map(gdf_stations, map)
-
     # add the layer control for toggling the layers
     map.add_child(folium.LayerControl())
     
@@ -152,6 +136,5 @@ def base(str1, str2, str3, str4, str5, str6):
     return head + map._repr_html_()
 
 if __name__ == "__main__":
-    #app.run(debug=True)
     Timer(1, webbrowser.open('http://127.0.0.1:5000/')).start()
     app.run(debug=True, use_reloader=False)

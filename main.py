@@ -156,7 +156,7 @@ def network_preprocessing(countries: list) -> None:
 
         station_gdf = e.convert_to_gdf(station_json, COLUMNS_STAT, ['Point', 'MultiPoint'])
         station_gdf = e.reproject(station_gdf, EPSG)
-        if country == 'Greece' or country == 'North Macedonia':
+        if country == 'Greece' or country == 'North Macedonia' or country == 'Bulgaria' or country == 'Serbia' or country == 'Montenegro':
             station_gdf["name"] = station_gdf["name:en"]
         station_all_gdf = station_all_gdf.append(station_gdf, ignore_index=True)
 
@@ -166,7 +166,7 @@ def network_preprocessing(countries: list) -> None:
 
         city_gdf = e.convert_to_gdf(city_json, COLUMNS_CITY, ['Point', 'MultiPoint'])
         city_gdf = e.reproject(city_gdf, EPSG)
-        if country == 'Greece' or country == 'North Macedonia':
+        if country == 'Greece' or country == 'North Macedonia' or country == 'Bulgaria' or country == 'Serbia' or country == 'Montenegro':
             city_gdf["name"] = city_gdf["name:en"]
         city_all_gdf = city_all_gdf.append(city_gdf, ignore_index=True)
 
@@ -269,11 +269,5 @@ def routing(list_input_city: list):
     try:
         e.save_as_shp(close_natus, 'data/route/close_natus')
     except: e.info("no close natural parks on your best route")
-
-    # select stations on the way
-    #close_stations = r.features_on_way(station_gdf, best_route, [], 2000, crs=EPSG)
-    #try:
-    #    e.save_as_shp(close_stations, 'data/route/close_stations')
-    #except: e.info("no close stations on your best route")
 
     return dict_distance_matrix
