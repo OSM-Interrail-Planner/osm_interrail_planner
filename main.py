@@ -186,6 +186,7 @@ def network_preprocessing(countries: list) -> None:
 
         natu_gdf = e.convert_to_gdf(natu_json, COLUMNS_NATU, [])
         natu_gdf = e.reproject(natu_gdf, EPSG)
+        natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
 
     e.info("PREPROCSSING: MERGED ALL COUNTRIES")

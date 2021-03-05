@@ -259,14 +259,14 @@ def way_to_polygon(geo_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     # create a function for checking the geometry type of a GeoDataFrame row
     def check_geom_type(row):
-        if row["geometry"].geom_type != 'Polygon' or row["geometry"].geom_type != 'MultiPolygon':
+        if row["geometry"].geom_type == 'LineString':
             try:
-                geo = sg.Polygon(list(sg.LineString(row["geometry"]).coords))
+                geo = sg.Polygon(list(row["geometry"].coords))
             except:
                 geo = None
-        else:
-            geo = row["geometry"]
-        return geo
+            return geo
+        elif row["geometry"].geom_type == 'Polygon' or row["geometry"].geom_type == 'MultiPolygon':
+            return row["geometry"]
 
     geo_df["geometry"] = geo_df.apply(lambda row: check_geom_type(row), axis=1)
     geo_df = geo_df[geo_df["geometry"]!=None]
