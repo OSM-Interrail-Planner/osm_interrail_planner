@@ -6,9 +6,9 @@ From OpenStreetMap (OSM) through the Overpass API, the application collects data
 ![Test Image 6](z_README_img/Homepage.jpg)
 
 ## Requirements
-- Python 3
-- Manual download of packages outlined in **required_packages.txt**
-- Use the conda console to create the virtual environment from the rail_planner.yml with the command: **conda env create --file rail_planner.yml**
+- Python 3, with packages outlined in **required_packages.txt**
+- Packages can be manually downloaded and installed using conda and/or pip.
+- Alternatively, use Anaconda Prompt to create a virtual environment (containing the requred packeges) from the **rail_planner.yml**, using the command: **conda env create --file rail_planner.yml**.
 
 ## How to run the application
 - Run **python server.py** in the console to start the program (opens automatically in your web browser).
