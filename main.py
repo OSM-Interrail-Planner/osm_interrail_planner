@@ -28,6 +28,8 @@ if os.path.exists("data/original") == False:
     os.makedirs("data/original")
 if os.path.exists("data/processed") == False:
     os.makedirs("data/processed")
+if os.path.exists("data/processed/z_database") == False:
+    os.makedirs("data/processed/z_database")
 
 # Create the filenames for folder data/original
 fname_rail_original = e.create_fname(NAME_RAIL, DOWNLOAD_DIR)
