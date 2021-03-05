@@ -48,6 +48,7 @@ def select_cities(str1, str2, str3, str4, str5, str6 ):
 def base(str1, str2, str3, str4, str5, str6):
     list_city = [str1, str2, str3, str4, str5, str6]
 
+    list_city = list(set(list_city))
     if 'None' in list_city:
         list_city.remove('None')
 
