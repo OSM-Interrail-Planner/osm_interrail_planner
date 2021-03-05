@@ -3,7 +3,6 @@ import shapely.geometry as sg
 import geopandas as gpd
 import osm2geojson as o2g
 
-
 def open_json(filename: str):
     """
     This function loads in the json file stored in data/original 
@@ -260,14 +259,11 @@ def way_to_polygon(geo_df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     # create a function for checking the geometry type of a GeoDataFrame row
     def check_geom_type(row):
-        if row["geometry"].geom_type == 'LineString':
-            try:
-                geo = sg.Polygon(list(row["geometry"].coords))
-            except:
-                geo = None
-            return geo
-        else:
-            return row["geometry"]
+        try:
+            geo = sg.Polygon(list(sg.LineString(row["geometry"]).coords))
+        except:
+            geo = None
+        return geo
 
     geo_df["geometry"] = geo_df.apply(lambda row: check_geom_type(row), axis=1)
     geo_df = geo_df[geo_df["geometry"]!=None]
