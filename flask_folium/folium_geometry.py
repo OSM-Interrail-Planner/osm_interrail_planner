@@ -1,5 +1,5 @@
 import geopandas as gpd
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 
 
 def line_geom(line_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -34,7 +34,7 @@ def point_geom(point_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     new_points = []
     for i, row in point_gdf.iterrows():
-        point = list(row["geometry"].coords)
+        point = list(Point(row["geometry"]).coords)
         new_points.append([point[0][1], point[0][0]])
     point_gdf["folium_geom"] = new_points
 
