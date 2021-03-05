@@ -181,7 +181,7 @@ def create_distance_matrix(gdf_input_stations: gpd.GeoDataFrame, rail_segments_g
                     shortest_path_result = shortest_path(gdf_input_stations, st_origin, st_destination, rail_segments_gdf)
                     list_path_st_origin.append(shortest_path_result)
                     distance = shortest_path_result.length/1000
-                    print(f"from {st_origin} to {st_destination} is takes {distance} kilometers")
+                    print(f"from {st_origin} to {st_destination} it takes {round(distance, 0)} kilometers")
                     list_dist_st_origin.append(distance)
                 # if the calculation of shortest path fails, try to figure out which station is the problem
                 except:

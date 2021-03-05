@@ -63,7 +63,7 @@ def features_on_way(feature_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, l
 
     tmp["line_i"] = tmp["line_i"].astype(int)
 
-    # Join back to the lines on line_i 
+    # Join back to the geometries
     tmp = tmp.join(feature_gdf.reset_index(drop=True), on="ft_idx") 
     tmp = tmp.join(line_gdf.geometry.rename("line"), on="line_i") 
     tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=crs) 
@@ -72,7 +72,7 @@ def features_on_way(feature_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, l
     tmp["dist"] = tmp.geometry.distance(gpd.GeoSeries(tmp.line))
 
     # Discard points by distance to each rail
-    tmp = tmp.loc[tmp.dist <= offset] # discard any points that are greater than tolerance from points
+    tmp = tmp.loc[tmp.dist <= offset] # discard any features that are greater than tolerance from points
     # Sort out unimportant cities and duplicates if closest cities are looked for
     if "place" in tmp.columns:
         tmp = tmp[tmp["place"] == "city"]
@@ -83,6 +83,5 @@ def features_on_way(feature_gdf: gpd.GeoDataFrame, line_gdf: gpd.GeoDataFrame, l
     tmp = tmp.reset_index()
     tmp = tmp.drop(columns=["index", "ft_idx", "line", "dist"])
     tmp = gpd.GeoDataFrame(tmp, geometry="geometry", crs=crs)
-
 
     return tmp
