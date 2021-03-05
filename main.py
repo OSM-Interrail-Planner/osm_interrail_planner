@@ -16,7 +16,7 @@ COLUMNS_CITY = {"name": str, "name:en": str, "place": str, "population": str}
 NAME_HERI = "heritage"
 COLUMNS_HERI = {"name": str, "heritage": str}
 NAME_NATU = "nature"
-COLUMNS_NATU = {"name": str, "website": str}
+COLUMNS_NATU = {"name": str}
 DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 EPSG = "EPSG:32629"
@@ -186,7 +186,6 @@ def network_preprocessing(countries: list) -> None:
 
         natu_gdf = e.convert_to_gdf(natu_json, COLUMNS_NATU, [])
         natu_gdf = e.reproject(natu_gdf, EPSG)
-        natu_gdf = e.way_to_polygon(natu_gdf)
         natu_all_gdf = natu_all_gdf.append(natu_gdf, ignore_index=True)
 
     e.info("PREPROCSSING: MERGED ALL COUNTRIES")
