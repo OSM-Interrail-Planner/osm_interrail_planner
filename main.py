@@ -21,6 +21,14 @@ DOWNLOAD_DIR = "data/original"
 PROCESSED_DIR = "data/processed"
 EPSG = "EPSG:32629"
 
+# Create the data folders
+if os.path.exists("data") == False:
+    os.makedirs("data")
+if os.path.exists("data/original") == False:
+    os.makedirs("data/original")
+if os.path.exists("data/processed") == False:
+    os.makedirs("data/processed")
+
 # Create the filenames for folder data/original
 fname_rail_original = e.create_fname(NAME_RAIL, DOWNLOAD_DIR)
 fname_station_original = e.create_fname(NAME_STAT, DOWNLOAD_DIR)
@@ -43,7 +51,7 @@ def extraction(countries: list) -> None:
     """
     
     e.info("EXTRACTION: START DATA EXTRACTION")
-
+    
     for country in countries:
         # Railway data from OSM
         if os.path.exists(f"{fname_rail_original}_{country}.geojson") == False:
